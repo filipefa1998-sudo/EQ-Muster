@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elders Quorum Leadership Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #059669;
+            --accent: #d97706;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: var(--text-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+        }
+
+        .purpose-box {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .purpose-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .purpose-item h4 {
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .purpose-item p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .nav-tabs {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: var(--bg-main);
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #10b981;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        thead {
+            background: var(--bg-main);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-main);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-planned { background: #dbeafe; color: #1e40af; }
+        .badge-promoted { background: #fef3c7; color: #92400e; }
+        .badge-completed { background: #d1fae5; color: #065f46; }
+        .badge-cancelled { background: #fee2e2; color: #991b1b; }
+        .badge-spiritual { background: #e0e7ff; color: #3730a3; }
+        .badge-social { background: #ddd6fe; color: #5b21b6; }
+        .badge-service { background: #d1fae5; color: #065f46; }
+        .badge-family { background: #fce7f3; color: #831843; }
+        .badge-consistent { background: #d1fae5; color: #065f46; }
+        .badge-occasional { background: #fef3c7; color: #92400e; }
+        .badge-rare { background: #fee2e2; color: #991b1b; }
+        .badge-improving { background: #d1fae5; color: #065f46; }
+        .badge-flat { background: #e5e7eb; color: #374151; }
+        .badge-declining { background: #fee2e2; color: #991b1b; }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .action-btn-edit {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .action-btn-edit:hover {
+            background: #bfdbfe;
+        }
+
+        .action-btn-delete {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btn-delete:hover {
+            background: #fecaca;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .quarter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .quarter-card {
+            background: var(--bg-main);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+        }
+
+        .quarter-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 12px;
+            max-width: 900px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-main);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 2px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .export-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            table {
+                font-size: 0.85rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚡ Elders Quorum Leadership Tracker</h1>
+            <p>Focus Five-Aligned Planning & Accountability System</p>
+        </div>
+
+        <div class="purpose-box">
+            <h3 style="margin-bottom: 1rem;">What This System IS and IS NOT</h3>
+            <div class="purpose-grid">
+                <div class="purpose-item">
+                    <h4>✅ IS</h4>
+                    <p>A planning + accountability tool for quorum leadership. A way to see what we planned, what we did, and who we reached. A memory for next year's presidency.</p>
+                </div>
+                <div class="purpose-item">
+                    <h4>❌ IS NOT</h4>
+                    <p>A ministering database. A private pastoral notes system. A replacement for Focus Five.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="switchTab('calendar')">📅 Annual Calendar</button>
+            <button class="nav-tab" onclick="switchTab('engagement')">👥 Engagement Signals</button>
+            <button class="nav-tab" onclick="switchTab('quarterly')">📈 Quarterly Planning</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Events Planned</div>
+                    <div class="stat-value" id="stat-total-events">0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                    <div class="stat-label">Events Completed</div>
+                    <div class="stat-value" id="stat-completed-events">0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+                    <div class="stat-label">Upcoming Events</div>
+                    <div class="stat-value" id="stat-upcoming-events">0</div>
+                </div>
+                <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);">
+                    <div class="stat-label">Average Attendance</div>
+                    <div class="stat-value" id="stat-avg-attendance">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                </div>
+                <div id="recent-activity"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Engagement Overview</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                        <div class="stat-label">Consistent Attendees</div>
+                        <div class="stat-value" id="stat-consistent">0</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
+                        <div class="stat-label">Occasional Attendees</div>
+                        <div class="stat-value" id="stat-occasional">0</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
+                        <div class="stat-label">Rare Attendees</div>
+                        <div class="stat-value" id="stat-rare">0</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
+                        <div class="stat-label">Improving Trend</div>
+                        <div class="stat-value" id="stat-improving">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Tab -->
+        <div id="calendar" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Annual Event Calendar</h2>
+                    <button class="btn btn-primary" onclick="openEventModal()">➕ Add Event</button>
+                </div>
+                <div id="events-table"></div>
+            </div>
+        </div>
+
+        <!-- Engagement Tab -->
+        <div id="engagement" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Engagement & Attendance Signals</h2>
+                    <button class="btn btn-primary" onclick="openMemberModal()">➕ Add Member</button>
+                </div>
+                <div id="members-table"></div>
+            </div>
+        </div>
+
+        <!-- Quarterly Tab -->
+        <div id="quarterly" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Quarterly Rhythm & Planning</h2>
+                    <button class="btn btn-primary" onclick="openQuarterModal()">➕ Add Quarter</button>
+                </div>
+                <div id="quarters-grid"></div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="card">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">💾 Export & Backup</h3>
+            <div class="export-buttons">
+                <button class="btn btn-secondary" onclick="exportToJSON()">Export All Data (JSON)</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import Data</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importFromJSON(event)">
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Modal -->
+    <div id="event-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="event-modal-title">Add Event</h3>
+                <button class="modal-close" onclick="closeEventModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="event-form">
+                    <input type="hidden" id="event-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Event Name *</label>
+                            <input type="text" id="event-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Date *</label>
+                            <input type="date" id="event-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Event Type *</label>
+                            <select id="event-type" required>
+                                <option value="">Select type...</option>
+                                <option value="Spiritual">Spiritual</option>
+                                <option value="Social">Social</option>
+                                <option value="Service">Service</option>
+                                <option value="Family">Family</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Status *</label>
+                            <select id="event-status" required>
+                                <option value="Planned">Planned</option>
+                                <option value="Promoted">Promoted</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Purpose (1 sentence max) *</label>
+                        <textarea id="event-purpose" maxlength="150" required></textarea>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Owner *</label>
+                            <input type="text" id="event-owner" placeholder="EQP / Counselor / Name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Target Group *</label>
+                            <select id="event-target" required>
+                                <option value="">Select target...</option>
+                                <option value="Whole quorum">Whole quorum</option>
+                                <option value="New move-ins">New move-ins</option>
+                                <option value="Less-active">Less-active</option>
+                                <option value="Families">Families</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Budget (Planned)</label>
+                            <input type="number" id="event-budget-planned" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label>Budget (Actual)</label>
+                            <input type="number" id="event-budget-actual" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Focus Five Overlap?</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="event-focus-five">
+                                <label for="event-focus-five">Yes, this event aligns with Focus Five goals</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Roles Needed</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="role-setup" value="Setup">
+                                <label for="role-setup">Setup</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="role-food" value="Food">
+                                <label for="role-food">Food</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="role-teaching" value="Teaching">
+                                <label for="role-teaching">Teaching</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="role-transportation" value="Transportation">
+                                <label for="role-transportation">Transportation</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Promotion Channels</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="promo-quorum" value="Announced in quorum">
+                                <label for="promo-quorum">Announced in quorum</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="promo-text" value="Text">
+                                <label for="promo-text">Text</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="promo-email" value="Email">
+                                <label for="promo-email">Email</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="promo-bishopric" value="Bishopric mention">
+                                <label for="promo-bishopric">Bishopric mention</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Promotion Start Date</label>
+                            <input type="date" id="event-promo-date">
+                        </div>
+                        <div class="form-group">
+                            <label>Estimated Attendance</label>
+                            <input type="number" id="event-attendance" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>New/Returning Faces?</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="event-new-faces">
+                                <label for="event-new-faces">Yes, we saw new or returning faces</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>What Worked</label>
+                        <textarea id="event-what-worked" placeholder="After the event, note what went well..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>What to Change Next Time</label>
+                        <textarea id="event-what-change" placeholder="After the event, note what to improve..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEventModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEvent()">Save Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Member Modal -->
+    <div id="member-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="member-modal-title">Add Member</h3>
+                <button class="modal-close" onclick="closeMemberModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="member-form">
+                    <input type="hidden" id="member-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Member Name *</label>
+                            <input type="text" id="member-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Attendance Category *</label>
+                            <select id="member-category" required>
+                                <option value="">Select category...</option>
+                                <option value="Consistent">Consistent</option>
+                                <option value="Occasional">Occasional</option>
+                                <option value="Rare">Rare</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Attended (Month/Year)</label>
+                            <input type="month" id="member-last-attended">
+                        </div>
+                        <div class="form-group">
+                            <label>Engagement Signal *</label>
+                            <select id="member-signal" required>
+                                <option value="">Select signal...</option>
+                                <option value="Improving">Improving</option>
+                                <option value="Flat">Flat</option>
+                                <option value="Declining">Declining</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Event Types Attended</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="attended-spiritual" value="Spiritual">
+                                <label for="attended-spiritual">Spiritual</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="attended-social" value="Social">
+                                <label for="attended-social">Social</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="attended-service" value="Service">
+                                <label for="attended-service">Service</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Invited Recently?</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="member-invited">
+                                <label for="member-invited">Yes, recently invited</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Events Invited To</label>
+                        <input type="text" id="member-events-invited" placeholder="List event names...">
+                    </div>
+                    <div class="form-group">
+                        <label>Follow-Up Owner *</label>
+                        <select id="member-followup" required>
+                            <option value="">Select owner...</option>
+                            <option value="EQP">EQP</option>
+                            <option value="Counselor">Counselor</option>
+                            <option value="Focus Five Brother">Focus Five Brother</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeMemberModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveMember()">Save Member</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quarter Modal -->
+    <div id="quarter-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="quarter-modal-title">Add Quarter</h3>
+                <button class="modal-close" onclick="closeQuarterModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="quarter-form">
+                    <input type="hidden" id="quarter-id">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Quarter *</label>
+                            <select id="quarter-name" required>
+                                <option value="">Select quarter...</option>
+                                <option value="Q1">Q1 (Jan-Mar)</option>
+                                <option value="Q2">Q2 (Apr-Jun)</option>
+                                <option value="Q3">Q3 (Jul-Sep)</option>
+                                <option value="Q4">Q4 (Oct-Dec)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Year *</label>
+                            <input type="number" id="quarter-year" min="2024" max="2030" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Planned Activities</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="quarter-spiritual" value="Spiritual">
+                                <label for="quarter-spiritual">Spiritual Activity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="quarter-service" value="Service">
+                                <label for="quarter-service">Service Activity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="quarter-social" value="Social">
+                                <label for="quarter-social">Social Activity</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="quarter-family" value="Family">
+                                <label for="quarter-family">Family-Friendly Event</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Activities Completed</label>
+                            <input type="number" id="quarter-completed" min="0" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Average Attendance</label>
+                            <input type="number" id="quarter-attendance" min="0" placeholder="0">
+                        </div>
+                        <div class="form-group">
+                            <label>Focus Five Alignment</label>
+                            <select id="quarter-alignment">
+                                <option value="None">None</option>
+                                <option value="Partial">Partial</option>
+                                <option value="Strong">Strong</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>What Built Unity?</label>
+                        <textarea id="quarter-unity" placeholder="Note what brought the quorum together..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>What Fell Flat?</label>
+                        <textarea id="quarter-flat" placeholder="Note what didn't work as expected..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>What to Repeat Next Year?</label>
+                        <textarea id="quarter-repeat" placeholder="Note what should definitely be done again..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeQuarterModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveQuarter()">Save Quarter</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Storage
+        let events = [];
+        let members = [];
+        let quarters = [];
+        let editingEventId = null;
+        let editingMemberId = null;
+        let editingQuarterId = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            renderAll();
+        });
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Event Functions
+        function openEventModal(id = null) {
+            editingEventId = id;
+            const modal = document.getElementById('event-modal');
+            const title = document.getElementById('event-modal-title');
+            
+            if (id) {
+                title.textContent = 'Edit Event';
+                const event = events.find(e => e.id === id);
+                if (event) {
+                    document.getElementById('event-id').value = event.id;
+                    document.getElementById('event-name').value = event.name;
+                    document.getElementById('event-date').value = event.date;
+                    document.getElementById('event-type').value = event.type;
+                    document.getElementById('event-status').value = event.status;
+                    document.getElementById('event-purpose').value = event.purpose;
+                    document.getElementById('event-owner').value = event.owner;
+                    document.getElementById('event-target').value = event.target;
+                    document.getElementById('event-budget-planned').value = event.budgetPlanned || '';
+                    document.getElementById('event-budget-actual').value = event.budgetActual || '';
+                    document.getElementById('event-focus-five').checked = event.focusFive;
+                    document.getElementById('event-promo-date').value = event.promoDate || '';
+                    document.getElementById('event-attendance').value = event.attendance || '';
+                    document.getElementById('event-new-faces').checked = event.newFaces;
+                    document.getElementById('event-what-worked').value = event.whatWorked || '';
+                    document.getElementById('event-what-change').value = event.whatChange || '';
+                    
+                    // Roles
+                    document.getElementById('role-setup').checked = event.roles?.includes('Setup');
+                    document.getElementById('role-food').checked = event.roles?.includes('Food');
+                    document.getElementById('role-teaching').checked = event.roles?.includes('Teaching');
+                    document.getElementById('role-transportation').checked = event.roles?.includes('Transportation');
+                    
+                    // Promotion
+                    document.getElementById('promo-quorum').checked = event.promotion?.includes('Announced in quorum');
+                    document.getElementById('promo-text').checked = event.promotion?.includes('Text');
+                    document.getElementById('promo-email').checked = event.promotion?.includes('Email');
+                    document.getElementById('promo-bishopric').checked = event.promotion?.includes('Bishopric mention');
+                }
+            } else {
+                title.textContent = 'Add Event';
+                document.getElementById('event-form').reset();
+                document.getElementById('event-id').value = '';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.remove('active');
+            document.getElementById('event-form').reset();
+            editingEventId = null;
+        }
+
+        function saveEvent() {
+            const form = document.getElementById('event-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const roles = [];
+            if (document.getElementById('role-setup').checked) roles.push('Setup');
+            if (document.getElementById('role-food').checked) roles.push('Food');
+            if (document.getElementById('role-teaching').checked) roles.push('Teaching');
+            if (document.getElementById('role-transportation').checked) roles.push('Transportation');
+
+            const promotion = [];
+            if (document.getElementById('promo-quorum').checked) promotion.push('Announced in quorum');
+            if (document.getElementById('promo-text').checked) promotion.push('Text');
+            if (document.getElementById('promo-email').checked) promotion.push('Email');
+            if (document.getElementById('promo-bishopric').checked) promotion.push('Bishopric mention');
+
+            const eventData = {
+                id: editingEventId || Date.now().toString(),
+                name: document.getElementById('event-name').value,
+                date: document.getElementById('event-date').value,
+                type: document.getElementById('event-type').value,
+                status: document.getElementById('event-status').value,
+                purpose: document.getElementById('event-purpose').value,
+                owner: document.getElementById('event-owner').value,
+                target: document.getElementById('event-target').value,
+                budgetPlanned: parseFloat(document.getElementById('event-budget-planned').value) || 0,
+                budgetActual: parseFloat(document.getElementById('event-budget-actual').value) || 0,
+                focusFive: document.getElementById('event-focus-five').checked,
+                roles: roles,
+                promotion: promotion,
+                promoDate: document.getElementById('event-promo-date').value,
+                attendance: parseInt(document.getElementById('event-attendance').value) || 0,
+                newFaces: document.getElementById('event-new-faces').checked,
+                whatWorked: document.getElementById('event-what-worked').value,
+                whatChange: document.getElementById('event-what-change').value
+            };
+
+            if (editingEventId) {
+                const index = events.findIndex(e => e.id === editingEventId);
+                events[index] = eventData;
+            } else {
+                events.push(eventData);
+            }
+
+            saveData();
+            renderAll();
+            closeEventModal();
+        }
+
+        function deleteEvent(id) {
+            if (confirm('Are you sure you want to delete this event?')) {
+                events = events.filter(e => e.id !== id);
+                saveData();
+                renderAll();
+            }
+        }
+
+        // Member Functions
+        function openMemberModal(id = null) {
+            editingMemberId = id;
+            const modal = document.getElementById('member-modal');
+            const title = document.getElementById('member-modal-title');
+            
+            if (id) {
+                title.textContent = 'Edit Member';
+                const member = members.find(m => m.id === id);
+                if (member) {
+                    document.getElementById('member-id').value = member.id;
+                    document.getElementById('member-name').value = member.name;
+                    document.getElementById('member-category').value = member.category;
+                    document.getElementById('member-last-attended').value = member.lastAttended || '';
+                    document.getElementById('member-signal').value = member.signal;
+                    document.getElementById('member-invited').checked = member.invited;
+                    document.getElementById('member-events-invited').value = member.eventsInvited || '';
+                    document.getElementById('member-followup').value = member.followup;
+                    
+                    document.getElementById('attended-spiritual').checked = member.eventTypes?.includes('Spiritual');
+                    document.getElementById('attended-social').checked = member.eventTypes?.includes('Social');
+                    document.getElementById('attended-service').checked = member.eventTypes?.includes('Service');
+                }
+            } else {
+                title.textContent = 'Add Member';
+                document.getElementById('member-form').reset();
+                document.getElementById('member-id').value = '';
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeMemberModal() {
+            document.getElementById('member-modal').classList.remove('active');
+            document.getElementById('member-form').reset();
+            editingMemberId = null;
+        }
+
+        function saveMember() {
+            const form = document.getElementById('member-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const eventTypes = [];
+            if (document.getElementById('attended-spiritual').checked) eventTypes.push('Spiritual');
+            if (document.getElementById('attended-social').checked) eventTypes.push('Social');
+            if (document.getElementById('attended-service').checked) eventTypes.push('Service');
+
+            const memberData = {
+                id: editingMemberId || Date.now().toString(),
+                name: document.getElementById('member-name').value,
+                category: document.getElementById('member-category').value,
+                lastAttended: document.getElementById('member-last-attended').value,
+                signal: document.getElementById('member-signal').value,
+                eventTypes: eventTypes,
+                invited: document.getElementById('member-invited').checked,
+                eventsInvited: document.getElementById('member-events-invited').value,
+                followup: document.getElementById('member-followup').value
+            };
+
+            if (editingMemberId) {
+                const index = members.findIndex(m => m.id === editingMemberId);
+                members[index] = memberData;
+            } else {
+                members.push(memberData);
+            }
+
+            saveData();
+            renderAll();
+            closeMemberModal();
+        }
+
+        function deleteMember(id) {
+            if (confirm('Are you sure you want to delete this member?')) {
+                members = members.filter(m => m.id !== id);
+                saveData();
+                renderAll();
+            }
+        }
+
+        // Quarter Functions
+        function openQuarterModal(id = null) {
+            editingQuarterId = id;
+            const modal = document.getElementById('quarter-modal');
+            const title = document.getElementById('quarter-modal-title');
+            
+            if (id) {
+                title.textContent = 'Edit Quarter';
+                const quarter = quarters.find(q => q.id === id);
+                if (quarter) {
+                    document.getElementById('quarter-id').value = quarter.id;
+                    document.getElementById('quarter-name').value = quarter.name;
+                    document.getElementById('quarter-year').value = quarter.year;
+                    document.getElementById('quarter-completed').value = quarter.completed || '';
+                    document.getElementById('quarter-attendance').value = quarter.attendance || '';
+                    document.getElementById('quarter-alignment').value = quarter.alignment || 'None';
+                    document.getElementById('quarter-unity').value = quarter.unity || '';
+                    document.getElementById('quarter-flat').value = quarter.flat || '';
+                    document.getElementById('quarter-repeat').value = quarter.repeat || '';
+                    
+                    document.getElementById('quarter-spiritual').checked = quarter.planned?.includes('Spiritual');
+                    document.getElementById('quarter-service').checked = quarter.planned?.includes('Service');
+                    document.getElementById('quarter-social').checked = quarter.planned?.includes('Social');
+                    document.getElementById('quarter-family').checked = quarter.planned?.includes('Family');
+                }
+            } else {
+                title.textContent = 'Add Quarter';
+                document.getElementById('quarter-form').reset();
+                document.getElementById('quarter-id').value = '';
+                document.getElementById('quarter-year').value = new Date().getFullYear();
+            }
+            
+            modal.classList.add('active');
+        }
+
+        function closeQuarterModal() {
+            document.getElementById('quarter-modal').classList.remove('active');
+            document.getElementById('quarter-form').reset();
+            editingQuarterId = null;
+        }
+
+        function saveQuarter() {
+            const form = document.getElementById('quarter-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const planned = [];
+            if (document.getElementById('quarter-spiritual').checked) planned.push('Spiritual');
+            if (document.getElementById('quarter-service').checked) planned.push('Service');
+            if (document.getElementById('quarter-social').checked) planned.push('Social');
+            if (document.getElementById('quarter-family').checked) planned.push('Family');
+
+            const quarterData = {
+                id: editingQuarterId || Date.now().toString(),
+                name: document.getElementById('quarter-name').value,
+                year: parseInt(document.getElementById('quarter-year').value),
+                planned: planned,
+                completed: parseInt(document.getElementById('quarter-completed').value) || 0,
+                attendance: parseInt(document.getElementById('quarter-attendance').value) || 0,
+                alignment: document.getElementById('quarter-alignment').value,
+                unity: document.getElementById('quarter-unity').value,
+                flat: document.getElementById('quarter-flat').value,
+                repeat: document.getElementById('quarter-repeat').value
+            };
+
+            if (editingQuarterId) {
+                const index = quarters.findIndex(q => q.id === editingQuarterId);
+                quarters[index] = quarterData;
+            } else {
+                quarters.push(quarterData);
+            }
+
+            saveData();
+            renderAll();
+            closeQuarterModal();
+        }
+
+        function deleteQuarter(id) {
+            if (confirm('Are you sure you want to delete this quarter?')) {
+                quarters = quarters.filter(q => q.id !== id);
+                saveData();
+                renderAll();
+            }
+        }
+
+        // Render Functions
+        function renderAll() {
+            renderDashboard();
+            renderEvents();
+            renderMembers();
+            renderQuarters();
+        }
+
+        function renderDashboard() {
+            // Stats
+            const totalEvents = events.length;
+            const completedEvents = events.filter(e => e.status === 'Completed').length;
+            const upcomingEvents = events.filter(e => e.status === 'Planned' || e.status === 'Promoted').length;
+            const avgAttendance = events.length > 0 
+                ? Math.round(events.reduce((sum, e) => sum + (e.attendance || 0), 0) / events.length)
+                : 0;
+
+            document.getElementById('stat-total-events').textContent = totalEvents;
+            document.getElementById('stat-completed-events').textContent = completedEvents;
+            document.getElementById('stat-upcoming-events').textContent = upcomingEvents;
+            document.getElementById('stat-avg-attendance').textContent = avgAttendance;
+
+            // Engagement stats
+            const consistent = members.filter(m => m.category === 'Consistent').length;
+            const occasional = members.filter(m => m.category === 'Occasional').length;
+            const rare = members.filter(m => m.category === 'Rare').length;
+            const improving = members.filter(m => m.signal === 'Improving').length;
+
+            document.getElementById('stat-consistent').textContent = consistent;
+            document.getElementById('stat-occasional').textContent = occasional;
+            document.getElementById('stat-rare').textContent = rare;
+            document.getElementById('stat-improving').textContent = improving;
+
+            // Recent activity
+            const recentEvents = [...events].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            const activityHtml = recentEvents.length > 0 ? `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Attendance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recentEvents.map(e => `
+                            <tr>
+                                <td><strong>${e.name}</strong></td>
+                                <td>${new Date(e.date).toLocaleDateString()}</td>
+                                <td><span class="badge badge-${e.type.toLowerCase()}">${e.type}</span></td>
+                                <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
+                                <td>${e.attendance || 'TBD'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            ` : '<div class="empty-state">No events yet. Add your first event to get started!</div>';
+
+            document.getElementById('recent-activity').innerHTML = activityHtml;
+        }
+
+        function renderEvents() {
+            const container = document.getElementById('events-table');
+            
+            if (events.length === 0) {
+                container.innerHTML = '<div class="empty-state">No events yet. Click "Add Event" to create your first event!</div>';
+                return;
+            }
+
+            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event Name</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Owner</th>
+                            <th>Target</th>
+                            <th>Focus Five</th>
+                            <th>Attendance</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedEvents.map(e => `
+                            <tr>
+                                <td><strong>${e.name}</strong><br><small style="color: var(--text-secondary);">${e.purpose}</small></td>
+                                <td>${new Date(e.date).toLocaleDateString()}</td>
+                                <td><span class="badge badge-${e.type.toLowerCase()}">${e.type}</span></td>
+                                <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
+                                <td>${e.owner}</td>
+                                <td>${e.target}</td>
+                                <td>${e.focusFive ? '✅ Yes' : '—'}</td>
+                                <td>${e.attendance || 'TBD'}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn action-btn-edit" onclick="openEventModal('${e.id}')">Edit</button>
+                                        <button class="action-btn action-btn-delete" onclick="deleteEvent('${e.id}')">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderMembers() {
+            const container = document.getElementById('members-table');
+            
+            if (members.length === 0) {
+                container.innerHTML = '<div class="empty-state">No members yet. Click "Add Member" to track engagement!</div>';
+                return;
+            }
+
+            const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Last Attended</th>
+                            <th>Event Types</th>
+                            <th>Signal</th>
+                            <th>Recently Invited</th>
+                            <th>Follow-Up Owner</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedMembers.map(m => `
+                            <tr>
+                                <td><strong>${m.name}</strong></td>
+                                <td><span class="badge badge-${m.category.toLowerCase()}">${m.category}</span></td>
+                                <td>${m.lastAttended ? new Date(m.lastAttended + '-01').toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'Unknown'}</td>
+                                <td>${m.eventTypes?.join(', ') || '—'}</td>
+                                <td><span class="badge badge-${m.signal.toLowerCase()}">${m.signal}</span></td>
+                                <td>${m.invited ? '✅ Yes' : '—'}</td>
+                                <td>${m.followup}</td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <button class="action-btn action-btn-edit" onclick="openMemberModal('${m.id}')">Edit</button>
+                                        <button class="action-btn action-btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function renderQuarters() {
+            const container = document.getElementById('quarters-grid');
+            
+            if (quarters.length === 0) {
+                container.innerHTML = '<div class="empty-state">No quarterly data yet. Click "Add Quarter" to start planning!</div>';
+                return;
+            }
+
+            const sortedQuarters = [...quarters].sort((a, b) => {
+                if (a.year !== b.year) return b.year - a.year;
+                const qOrder = {'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4};
+                return qOrder[b.name] - qOrder[a.name];
+            });
+
+            container.innerHTML = `
+                <div class="quarter-grid">
+                    ${sortedQuarters.map(q => `
+                        <div class="quarter-card">
+                            <div class="quarter-header">${q.name} ${q.year}</div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Planned Activities:</strong><br>
+                                ${q.planned?.join(', ') || 'None'}
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <strong>Completed:</strong> ${q.completed || 0} activities<br>
+                                <strong>Avg Attendance:</strong> ${q.attendance || 0}<br>
+                                <strong>Focus Five:</strong> <span class="badge">${q.alignment || 'None'}</span>
+                            </div>
+                            ${q.unity ? `<div style="margin-bottom: 0.5rem;"><strong>Built Unity:</strong> ${q.unity}</div>` : ''}
+                            ${q.flat ? `<div style="margin-bottom: 0.5rem;"><strong>Fell Flat:</strong> ${q.flat}</div>` : ''}
+                            ${q.repeat ? `<div style="margin-bottom: 0.5rem;"><strong>Repeat:</strong> ${q.repeat}</div>` : ''}
+                            <div class="action-buttons" style="margin-top: 1rem;">
+                                <button class="action-btn action-btn-edit" onclick="openQuarterModal('${q.id}')">Edit</button>
+                                <button class="action-btn action-btn-delete" onclick="deleteQuarter('${q.id}')">Delete</button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Data Management
+        function saveData() {
+            localStorage.setItem('eq-tracker-events', JSON.stringify(events));
+            localStorage.setItem('eq-tracker-members', JSON.stringify(members));
+            localStorage.setItem('eq-tracker-quarters', JSON.stringify(quarters));
+        }
+
+        function loadData() {
+            const savedEvents = localStorage.getItem('eq-tracker-events');
+            const savedMembers = localStorage.getItem('eq-tracker-members');
+            const savedQuarters = localStorage.getItem('eq-tracker-quarters');
+            
+            if (savedEvents) events = JSON.parse(savedEvents);
+            if (savedMembers) members = JSON.parse(savedMembers);
+            if (savedQuarters) quarters = JSON.parse(savedQuarters);
+        }
+
+        function exportToJSON() {
+            const data = {
+                events: events,
+                members: members,
+                quarters: quarters,
+                exportDate: new Date().toISOString()
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `eq-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFromJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (confirm('This will replace all current data. Are you sure?')) {
+                        events = data.events || [];
+                        members = data.members || [];
+                        quarters = data.quarters || [];
+                        saveData();
+                        renderAll();
+                        alert('Data imported successfully!');
+                    }
+                } catch (error) {
+                    alert('Error importing file. Please check the file format.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
