@@ -1,1531 +1,977 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elders Quorum Leadership Tracker</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary: #1e3a8a;
-            --primary-light: #3b82f6;
-            --secondary: #059669;
-            --accent: #d97706;
-            --bg-main: #f8fafc;
-            --bg-card: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem 1rem;
-            color: var(--text-primary);
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            font-weight: 700;
-        }
-
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.95;
-        }
-
-        .purpose-box {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .purpose-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .purpose-item h4 {
-            color: #fbbf24;
-            margin-bottom: 0.5rem;
-            font-size: 0.95rem;
-        }
-
-        .purpose-item p {
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .nav-tabs {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 0.5rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            gap: 0.5rem;
-            overflow-x: auto;
-        }
-
-        .nav-tab {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s;
-            white-space: nowrap;
-        }
-
-        .nav-tab:hover {
-            background: var(--bg-main);
-        }
-
-        .nav-tab.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .card {
-            background: var(--bg-card);
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: var(--shadow-lg);
-            margin-bottom: 2rem;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-light);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-secondary {
-            background: var(--secondary);
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #10b981;
-        }
-
-        .btn-small {
-            padding: 0.5rem 1rem;
-            font-size: 0.85rem;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group label {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-        }
-
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .checkbox-group {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .checkbox-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        thead {
-            background: var(--bg-main);
-        }
-
-        th {
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-            color: var(--text-primary);
-            border-bottom: 2px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-        }
-
-        tbody tr:hover {
-            background: var(--bg-main);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-
-        .badge-planned { background: #dbeafe; color: #1e40af; }
-        .badge-promoted { background: #fef3c7; color: #92400e; }
-        .badge-completed { background: #d1fae5; color: #065f46; }
-        .badge-cancelled { background: #fee2e2; color: #991b1b; }
-        .badge-spiritual { background: #e0e7ff; color: #3730a3; }
-        .badge-social { background: #ddd6fe; color: #5b21b6; }
-        .badge-service { background: #d1fae5; color: #065f46; }
-        .badge-family { background: #fce7f3; color: #831843; }
-        .badge-consistent { background: #d1fae5; color: #065f46; }
-        .badge-occasional { background: #fef3c7; color: #92400e; }
-        .badge-rare { background: #fee2e2; color: #991b1b; }
-        .badge-improving { background: #d1fae5; color: #065f46; }
-        .badge-flat { background: #e5e7eb; color: #374151; }
-        .badge-declining { background: #fee2e2; color: #991b1b; }
-
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .action-btn {
-            padding: 0.4rem 0.8rem;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .action-btn-edit {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .action-btn-edit:hover {
-            background: #bfdbfe;
-        }
-
-        .action-btn-delete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .action-btn-delete:hover {
-            background: #fecaca;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            margin-bottom: 0.5rem;
-        }
-
-        .stat-value {
-            font-size: 2rem;
-            font-weight: 700;
-        }
-
-        .quarter-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .quarter-card {
-            background: var(--bg-main);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-        }
-
-        .quarter-header {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
-
-        .empty-state svg {
-            width: 64px;
-            height: 64px;
-            margin-bottom: 1rem;
-            opacity: 0.5;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            padding: 2rem;
-            overflow-y: auto;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: var(--bg-card);
-            border-radius: 12px;
-            max-width: 900px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .modal-header {
-            padding: 1.5rem;
-            border-bottom: 2px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-secondary);
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            transition: all 0.2s;
-        }
-
-        .modal-close:hover {
-            background: var(--bg-main);
-            color: var(--text-primary);
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-        }
-
-        .modal-footer {
-            padding: 1.5rem;
-            border-top: 2px solid var(--border);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
-
-        .export-section {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 2px solid var(--border);
-        }
-
-        .export-buttons {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 1rem 0.5rem;
-            }
-
-            .header h1 {
-                font-size: 1.8rem;
-            }
-
-            .card {
-                padding: 1.5rem;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            table {
-                font-size: 0.85rem;
-            }
-
-            th, td {
-                padding: 0.75rem 0.5rem;
-            }
-
-            .nav-tabs {
-                flex-direction: column;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#15181B">
+<title>MUSTER — Elders Quorum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#15181B;        /* page — cold forged iron */
+  --steel:#1B1F24;      /* nav / raised */
+  --panel:#20252B;      /* cards */
+  --panel-2:#272D34;    /* insets / hover */
+  --line:#343B43;       /* borders / rules */
+  --line-soft:#2A3037;
+  --bone:#EDE7DB;       /* primary text — warm canvas */
+  --bone-dim:#959BA2;   /* secondary text */
+  --bone-faint:#666D75;
+  --brass:#C8973E;      /* THE accent — forged brass */
+  --brass-bright:#E2B257;
+  --brass-deep:#8A6526;
+  --olive:#7C8A52;      /* done — field olive (muted) */
+  --oxblood:#9A463D;    /* cancel/delete — muted oxblood */
+  --r:10px;
+  --shadow:0 10px 30px -12px rgba(0,0,0,.7);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(200,151,62,.06), transparent 60%),
+    var(--ink);
+  color:var(--bone);
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:120px;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ---------- header / wordmark ---------- */
+.topbar{border-bottom:1px solid var(--line-soft);background:linear-gradient(180deg,#191D22,#15181B);position:relative}
+.topbar::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--brass-deep) 30%,var(--brass) 50%,var(--brass-deep) 70%,transparent)}
+.brand{display:flex;align-items:center;gap:16px;padding:22px 0 20px}
+.mark{
+  width:46px;height:46px;border-radius:8px;flex:0 0 auto;
+  background:linear-gradient(160deg,#2C333B,#1A1E23);
+  border:1px solid var(--line);
+  display:grid;place-items:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.mark svg{width:26px;height:26px}
+.brand-txt{line-height:1}
+.eyebrow{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--brass);margin-bottom:5px}
+.wordmark{font-family:'Anton';font-size:34px;letter-spacing:.04em;text-transform:uppercase;color:var(--bone);line-height:.92}
+.tagline{font-size:12.5px;color:var(--bone-dim);margin-top:6px;letter-spacing:.01em}
+
+/* ---------- nav ---------- */
+.nav{display:flex;gap:4px;border-top:1px solid var(--line-soft);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nav::-webkit-scrollbar{display:none}
+.navbtn{
+  font-family:'Oswald';font-weight:600;font-size:13px;letter-spacing:.12em;text-transform:uppercase;
+  background:none;border:none;color:var(--bone-faint);cursor:pointer;
+  padding:14px 16px;white-space:nowrap;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;
+}
+.navbtn:hover{color:var(--bone-dim)}
+.navbtn.active{color:var(--bone);border-bottom-color:var(--brass)}
+
+/* ---------- sections ---------- */
+.view{display:none;padding-top:24px;animation:rise .25s ease}
+.view.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.view{animation:none}}
+
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px}
+.sec-title{font-family:'Oswald';font-weight:700;font-size:22px;letter-spacing:.04em;text-transform:uppercase}
+.sec-sub{font-size:12.5px;color:var(--bone-dim)}
+
+/* ---------- stats strip ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.stat{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 16px 14px;position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brass);opacity:.55}
+.stat .n{font-family:'Anton';font-size:40px;line-height:.9;color:var(--bone);letter-spacing:.01em}
+.stat .l{font-family:'Oswald';font-weight:500;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--bone-dim);margin-top:9px}
+@media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}.stat .n{font-size:34px}}
+
+/* ---------- THE BOARD ---------- */
+.board{
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-bottom:24px;
+  background:linear-gradient(180deg,#1E2329,#191D22);box-shadow:var(--shadow);
+}
+.board-top{display:grid;grid-template-columns:140px repeat(3,1fr);border-bottom:1px solid var(--line)}
+.board-top .corner{padding:14px 16px;display:flex;align-items:flex-end}
+.board-top .corner span{font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.2em;color:var(--bone-faint);text-transform:uppercase}
+.colhead{padding:14px 14px;border-left:1px solid var(--line);text-align:center}
+.colhead .name{font-family:'Oswald';font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone)}
+.mini-pips{display:inline-flex;gap:3px;align-items:center}
+.colhead .pips{display:flex;gap:4px;justify-content:center;margin-top:7px}
+.pip{width:14px;height:4px;border-radius:2px;background:var(--line)}
+.pip.on{background:var(--brass)}
+
+.board-row{display:grid;grid-template-columns:140px repeat(3,1fr)}
+.board-row+.board-row{border-top:1px solid var(--line)}
+.rowlabel{padding:18px 16px;display:flex;flex-direction:column;justify-content:center;gap:8px;background:rgba(0,0,0,.18)}
+.rowlabel .pillar{display:flex;align-items:center;gap:9px}
+.rowlabel svg{width:20px;height:20px;flex:0 0 auto}
+.rowlabel .pillar b{font-family:'Oswald';font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase}
+.rowlabel small{font-size:11px;color:var(--bone-dim);line-height:1.3}
+
+.cell{border-left:1px solid var(--line);padding:16px 14px;cursor:pointer;transition:background .15s;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.cell:hover{background:var(--panel-2)}
+.cell:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+.cell-top{display:flex;align-items:baseline;gap:8px}
+.cell-top .c{font-family:'Anton';font-size:30px;line-height:.85;color:var(--bone)}
+.cell-top .c.zero{color:var(--bone-faint)}
+.cell-top .ct{font-family:'Oswald';font-weight:500;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+.cell-next{margin-top:10px}
+.cell-next .nx{font-size:12px;color:var(--bone);font-weight:500;line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cell-next .when{font-family:'Oswald';font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--brass);margin-top:4px;font-weight:600}
+.cell-empty{font-size:11.5px;color:var(--bone-faint);font-style:italic}
+
+@media(max-width:760px){
+  .board-top{display:none}
+  .board-row{display:block}
+  .rowlabel{flex-direction:row;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .board-row .cells-m{display:grid;grid-template-columns:repeat(3,1fr)}
+  .board-row .cell{min-height:96px}
+  .mlabel{display:block;font-family:'Oswald';font-weight:600;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-faint);margin-bottom:6px}
+}
+@media(min-width:761px){.mlabel{display:none}.cells-m{display:contents}}
+
+/* ---------- segmented level filter ---------- */
+.seg{display:inline-flex;background:var(--steel);border:1px solid var(--line);border-radius:9px;padding:4px;gap:3px;margin-bottom:18px;flex-wrap:wrap}
+.seg button{
+  font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+  background:none;border:none;color:var(--bone-dim);cursor:pointer;padding:8px 15px;border-radius:6px;transition:.15s;display:flex;align-items:center;gap:7px;
+}
+.seg button:hover{color:var(--bone)}
+.seg button.active{background:var(--brass);color:#1a1407}
+.seg button .mini-pips{display:flex;gap:2px}
+.seg button .mp{width:8px;height:3px;border-radius:1px;background:currentColor;opacity:.5}
+.seg button .mp.on{opacity:1}
+
+/* ---------- search ---------- */
+.searchbar{position:relative;margin-bottom:16px;max-width:380px}
+.searchbar input{width:100%;background:var(--steel);border:1px solid var(--line);border-radius:8px;color:var(--bone);padding:11px 12px 11px 38px;font-size:14px;font-family:'Inter'}
+.searchbar input:focus{outline:none;border-color:var(--brass)}
+.searchbar svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--bone-faint)}
+
+/* ---------- item cards ---------- */
+.list{display:grid;gap:12px}
+.item{
+  background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);
+  padding:16px 16px 14px;position:relative;display:grid;gap:12px;
+}
+.item.done{opacity:.72}
+.item.cancelled{opacity:.5}
+.item-l{position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:3px;background:var(--brass)}
+.item.done .item-l{background:var(--olive)}
+.item.cancelled .item-l{background:var(--oxblood)}
+.item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-left:8px}
+.item-title{font-family:'Oswald';font-weight:600;font-size:18px;letter-spacing:.01em;line-height:1.15}
+.item.cancelled .item-title{text-decoration:line-through}
+.item-meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px;align-items:center}
+.chip{font-family:'Oswald';font-weight:600;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;padding:4px 9px;border-radius:5px;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line)}
+.chip.tier{color:var(--bone-dim)}
+.chip.tier .mini-pips{display:flex;gap:2px}
+.chip.tier .mp{width:8px;height:3px;border-radius:1px;background:var(--brass);opacity:.35}
+.chip.tier .mp.on{opacity:1}
+.chip.pillar-service{color:var(--brass);border-color:var(--brass-deep)}
+.chip.pillar-activity{color:var(--bone);border-color:var(--line)}
+.chip.status{border:none;color:#15181B}
+.chip.s-planned{background:var(--bone-dim)}
+.chip.s-promoted{background:var(--brass)}
+.chip.s-completed{background:var(--olive);color:#10140a}
+.chip.s-cancelled{background:var(--oxblood);color:#fff}
+.chip.when{background:none;color:var(--brass);border-color:var(--brass-deep)}
+.chip.when.past{color:var(--bone-faint);border-color:var(--line-soft)}
+.chip.when.today{background:var(--brass);color:#1a1407;border:none}
+.chip.ff{color:var(--bone-dim);border-color:var(--line)}
+
+.item-purpose{font-size:13.5px;color:var(--bone-dim);line-height:1.5;padding-left:8px}
+.item-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding-left:8px;border-top:1px solid var(--line-soft);padding-top:11px}
+.facts{display:flex;flex-wrap:wrap;gap:16px}
+.fact{display:flex;flex-direction:column;gap:2px}
+.fact .fl{font-family:'Oswald';font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-faint)}
+.fact .fv{font-size:13px;color:var(--bone);font-weight:500}
+.fact .fv.accent{color:var(--brass);font-family:'Oswald';font-weight:700;font-size:15px}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------- buttons ---------- */
+.btn{font-family:'Oswald';font-weight:600;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;border:none;border-radius:7px;cursor:pointer;padding:9px 15px;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+.btn-primary{background:var(--brass);color:#1a1407}
+.btn-primary:hover{background:var(--brass-bright)}
+.btn-ghost{background:var(--panel-2);color:var(--bone);border:1px solid var(--line)}
+.btn-ghost:hover{border-color:var(--brass-deep);color:var(--brass-bright)}
+.btn-sm{padding:7px 11px;font-size:11px}
+.btn-danger{color:var(--oxblood)}
+.btn-advance{background:none;border:1px solid var(--brass-deep);color:var(--brass-bright)}
+.btn-advance:hover{background:var(--brass);color:#1a1407}
+.icon-btn{background:none;border:1px solid var(--line);color:var(--bone-dim);width:34px;height:34px;border-radius:7px;cursor:pointer;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{border-color:var(--brass-deep);color:var(--brass-bright)}
+.icon-btn svg{width:16px;height:16px}
+
+/* ---------- empty state ---------- */
+.empty{text-align:center;padding:52px 20px;border:1px dashed var(--line);border-radius:var(--r);color:var(--bone-faint)}
+.empty svg{width:34px;height:34px;margin-bottom:12px;opacity:.5}
+.empty h3{font-family:'Oswald';font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--bone-dim);font-size:15px;margin-bottom:6px}
+.empty p{font-size:13px;max-width:320px;margin:0 auto}
+
+/* ---------- brethren ---------- */
+.bre-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+@media(max-width:820px){.bre-grid{grid-template-columns:1fr}}
+.roster{display:grid;gap:10px}
+.bro{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:13px 14px;display:flex;align-items:center;gap:13px}
+.bro .ava{width:42px;height:42px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;font-family:'Oswald';font-weight:700;font-size:16px;background:linear-gradient(160deg,#2C333B,#1A1E23);border:1px solid var(--line);color:var(--brass)}
+.bro .info{flex:1;min-width:0}
+.bro .nm{font-family:'Oswald';font-weight:600;font-size:15px;letter-spacing:.01em}
+.bro .role{font-size:11.5px;color:var(--bone-dim);margin-top:2px}
+.bro .tally{text-align:center;flex:0 0 auto}
+.bro .tally .tn{font-family:'Anton';font-size:22px;line-height:1;color:var(--brass)}
+.bro .tally .tl{font-family:'Oswald';font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--bone-faint);margin-top:2px}
+.bro .ctl{display:flex;gap:5px;flex:0 0 auto}
+.lead{background:var(--panel);border:1px solid var(--line-soft);border-radius:14px;padding:18px;position:sticky;top:14px}
+.lead h3{font-family:'Oswald';font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:14px;color:var(--brass);margin-bottom:14px;display:flex;align-items:center;gap:9px}
+.lead svg{width:18px;height:18px}
+.lead-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line-soft)}
+.lead-row:last-child{border-bottom:none}
+.lead-rank{font-family:'Anton';font-size:20px;width:30px;color:var(--bone-faint)}
+.lead-rank.top{color:var(--brass)}
+.lead-nm{flex:1;font-weight:500;font-size:14px}
+.lead-bar{height:6px;border-radius:3px;background:var(--brass);min-width:6px}
+.lead-ct{font-family:'Oswald';font-weight:700;color:var(--brass);font-size:14px;width:24px;text-align:right}
+
+/* ---------- modal ---------- */
+.scrim{position:fixed;inset:0;background:rgba(8,10,12,.78);backdrop-filter:blur(4px);display:none;align-items:flex-start;justify-content:center;padding:24px 14px;z-index:50;overflow-y:auto}
+.scrim.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;width:100%;max-width:560px;box-shadow:var(--shadow);animation:rise .2s ease}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--line-soft)}
+.modal-head h3{font-family:'Oswald';font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:18px}
+.modal-x{background:none;border:none;color:var(--bone-dim);font-size:26px;cursor:pointer;line-height:1;width:32px;height:32px}
+.modal-x:hover{color:var(--bone)}
+.modal-body{padding:20px;display:grid;gap:16px}
+.modal-foot{padding:16px 20px;border-top:1px solid var(--line-soft);display:flex;justify-content:flex-end;gap:10px}
+.fg{display:flex;flex-direction:column;gap:7px}
+.fg label{font-family:'Oswald';font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--bone-dim)}
+.fg input,.fg select,.fg textarea{background:var(--steel);border:1px solid var(--line);border-radius:7px;color:var(--bone);padding:10px 12px;font-size:14px;font-family:'Inter';width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--brass)}
+.fg textarea{resize:vertical;min-height:64px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}}
+.toggle{display:flex;align-items:center;gap:10px;background:var(--steel);border:1px solid var(--line);border-radius:7px;padding:11px 12px;cursor:pointer}
+.toggle input{width:18px;height:18px;accent-color:var(--brass)}
+.toggle span{font-size:13px;color:var(--bone)}
+.pillar-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pp{border:1px solid var(--line);border-radius:8px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s;background:var(--steel)}
+.pp svg{width:22px;height:22px}
+.pp b{font-family:'Oswald';font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px}
+.pp.sel{border-color:var(--brass);background:rgba(200,151,62,.08)}
+
+/* ---------- FAB ---------- */
+.fab{position:fixed;right:22px;bottom:26px;z-index:40;background:var(--brass);color:#1a1407;border:none;border-radius:50px;height:56px;padding:0 24px 0 20px;display:flex;align-items:center;gap:10px;cursor:pointer;box-shadow:0 12px 30px -8px rgba(200,151,62,.55);font-family:'Oswald';font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:14px;transition:.15s}
+.fab:hover{background:var(--brass-bright);transform:translateY(-2px)}
+.fab svg{width:22px;height:22px}
+@media(max-width:520px){.fab{right:16px;bottom:18px;padding:0 20px;height:52px;font-size:13px}}
+
+/* ---------- toast ---------- */
+.toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--steel);border:1px solid var(--brass-deep);color:var(--bone);padding:12px 20px;border-radius:9px;font-size:13.5px;font-weight:500;opacity:0;pointer-events:none;transition:.25s;z-index:60;box-shadow:var(--shadow);max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ---------- utility row ---------- */
+.toolrow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.callout{background:var(--panel);border:1px solid var(--line-soft);border-left:3px solid var(--brass);border-radius:var(--r);padding:14px 16px;margin-bottom:22px;font-size:13px;color:var(--bone-dim);line-height:1.55}
+.callout b{color:var(--bone)}
+a.tel{color:inherit;text-decoration:none}
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>⚡ Elders Quorum Leadership Tracker</h1>
-            <p>Focus Five-Aligned Planning & Accountability System</p>
-        </div>
 
-        <div class="purpose-box">
-            <h3 style="margin-bottom: 1rem;">What This System IS and IS NOT</h3>
-            <div class="purpose-grid">
-                <div class="purpose-item">
-                    <h4>✅ IS</h4>
-                    <p>A planning + accountability tool for quorum leadership. A way to see what we planned, what we did, and who we reached. A memory for next year's presidency.</p>
-                </div>
-                <div class="purpose-item">
-                    <h4>❌ IS NOT</h4>
-                    <p>A ministering database. A private pastoral notes system. A replacement for Focus Five.</p>
-                </div>
-            </div>
-        </div>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark">
+        <!-- anvil mark -->
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 9h11l-1.2 3.2A4 4 0 0 1 9 14.8V17h4v2H7v-2h0v-2.4A6 6 0 0 1 2.4 9.6L3 9z" fill="#C8973E"/><path d="M14 9l4-2 1 1-3 2h-2z" fill="#8A6526"/><rect x="6" y="19" width="12" height="2" rx="1" fill="#8A6526"/></svg>
+      </div>
+      <div class="brand-txt">
+        <div class="eyebrow">Elders Quorum · Service &amp; Activities</div>
+        <div class="wordmark">Muster</div>
+        <div class="tagline">Put your shoulder to the wheel — stake, ward, and quorum.</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="navbtn active" data-view="board">The Board</button>
+      <button class="navbtn" data-view="service">Service</button>
+      <button class="navbtn" data-view="activity">Activities</button>
+      <button class="navbtn" data-view="brethren">Brethren</button>
+      <button class="navbtn" data-view="tools">Tools</button>
+    </nav>
+  </div>
+</header>
 
-        <div class="nav-tabs">
-            <button class="nav-tab active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-            <button class="nav-tab" onclick="switchTab('calendar')">📅 Annual Calendar</button>
-            <button class="nav-tab" onclick="switchTab('engagement')">👥 Engagement Signals</button>
-            <button class="nav-tab" onclick="switchTab('quarterly')">📈 Quarterly Planning</button>
-        </div>
+<main class="wrap">
 
-        <!-- Dashboard Tab -->
-        <div id="dashboard" class="tab-content active">
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Total Events Planned</div>
-                    <div class="stat-value" id="stat-total-events">0</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
-                    <div class="stat-label">Events Completed</div>
-                    <div class="stat-value" id="stat-completed-events">0</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
-                    <div class="stat-label">Upcoming Events</div>
-                    <div class="stat-value" id="stat-upcoming-events">0</div>
-                </div>
-                <div class="stat-card" style="background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);">
-                    <div class="stat-label">Average Attendance</div>
-                    <div class="stat-value" id="stat-avg-attendance">0</div>
-                </div>
-            </div>
+  <!-- ============ BOARD ============ -->
+  <section id="view-board" class="view active">
+    <div class="stats" id="stats"></div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Recent Activity</h2>
-                </div>
-                <div id="recent-activity"></div>
-            </div>
+    <div class="board" id="board"></div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Engagement Overview</h2>
-                </div>
-                <div class="stats-grid">
-                    <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
-                        <div class="stat-label">Consistent Attendees</div>
-                        <div class="stat-value" id="stat-consistent">0</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);">
-                        <div class="stat-label">Occasional Attendees</div>
-                        <div class="stat-value" id="stat-occasional">0</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);">
-                        <div class="stat-label">Rare Attendees</div>
-                        <div class="stat-value" id="stat-rare">0</div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #059669 0%, #10b981 100%);">
-                        <div class="stat-label">Improving Trend</div>
-                        <div class="stat-value" id="stat-improving">0</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="sec-head">
+      <h2 class="sec-title">On Deck — Next 14 Days</h2>
+      <span class="sec-sub" id="ondeck-sub"></span>
+    </div>
+    <div class="list" id="ondeck"></div>
+  </section>
 
-        <!-- Calendar Tab -->
-        <div id="calendar" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Annual Event Calendar</h2>
-                    <button class="btn btn-primary" onclick="openEventModal()">➕ Add Event</button>
-                </div>
-                <div id="events-table"></div>
-            </div>
-        </div>
+  <!-- ============ SERVICE ============ -->
+  <section id="view-service" class="view">
+    <div class="sec-head">
+      <h2 class="sec-title">Service</h2>
+      <span class="sec-sub">Projects &amp; opportunities to lift others.</span>
+    </div>
+    <div class="seg" id="seg-service"></div>
+    <div class="searchbar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      <input type="text" id="search-service" placeholder="Search service projects…">
+    </div>
+    <div class="list" id="list-service"></div>
+  </section>
 
-        <!-- Engagement Tab -->
-        <div id="engagement" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Engagement & Attendance Signals</h2>
-                    <button class="btn btn-primary" onclick="openMemberModal()">➕ Add Member</button>
-                </div>
-                <div id="members-table"></div>
-            </div>
-        </div>
+  <!-- ============ ACTIVITY ============ -->
+  <section id="view-activity" class="view">
+    <div class="sec-head">
+      <h2 class="sec-title">Activities</h2>
+      <span class="sec-sub">Gather the brethren — brotherhood &amp; fellowship.</span>
+    </div>
+    <div class="seg" id="seg-activity"></div>
+    <div class="searchbar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      <input type="text" id="search-activity" placeholder="Search activities…">
+    </div>
+    <div class="list" id="list-activity"></div>
+  </section>
 
-        <!-- Quarterly Tab -->
-        <div id="quarterly" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Quarterly Rhythm & Planning</h2>
-                    <button class="btn btn-primary" onclick="openQuarterModal()">➕ Add Quarter</button>
-                </div>
-                <div id="quarters-grid"></div>
-            </div>
-        </div>
+  <!-- ============ BRETHREN ============ -->
+  <section id="view-brethren" class="view">
+    <div class="sec-head">
+      <h2 class="sec-title">Brethren</h2>
+      <span class="sec-sub">Your call list. Tap to phone or text.</span>
+    </div>
+    <div class="toolrow">
+      <button class="btn btn-primary" onclick="openBro()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><path d="M12 5v14M5 12h14"/></svg>Add brother</button>
+    </div>
+    <div class="bre-grid">
+      <div class="roster" id="roster"></div>
+      <div class="lead">
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="#C8973E" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6m12 5h1.5a2.5 2.5 0 0 0 0-5H18M6 4h12v5a6 6 0 0 1-12 0V4zM9 19h6M10 22h4M12 15v4"/></svg>Muster Roll — who shows up</h3>
+        <div id="leaderboard"></div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Export Section -->
-        <div class="card">
-            <h3 style="color: var(--primary); margin-bottom: 1rem;">💾 Export & Backup</h3>
-            <div class="export-buttons">
-                <button class="btn btn-secondary" onclick="exportToJSON()">Export All Data (JSON)</button>
-                <button class="btn btn-secondary" onclick="document.getElementById('import-file').click()">Import Data</button>
-                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importFromJSON(event)">
-            </div>
-        </div>
+  <!-- ============ TOOLS ============ -->
+  <section id="view-tools" class="view">
+    <div class="sec-head"><h2 class="sec-title">Tools</h2></div>
+
+    <div class="callout">
+      <b>This is a planning &amp; accountability board — not a ministering record.</b> It tracks what the quorum
+      planned, what got done, and who showed up. Keep pastoral notes out of it.
     </div>
 
-    <!-- Event Modal -->
-    <div id="event-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="event-modal-title">Add Event</h3>
-                <button class="modal-close" onclick="closeEventModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="event-form">
-                    <input type="hidden" id="event-id">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Event Name *</label>
-                            <input type="text" id="event-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Date *</label>
-                            <input type="date" id="event-date" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Event Type *</label>
-                            <select id="event-type" required>
-                                <option value="">Select type...</option>
-                                <option value="Spiritual">Spiritual</option>
-                                <option value="Social">Social</option>
-                                <option value="Service">Service</option>
-                                <option value="Family">Family</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Status *</label>
-                            <select id="event-status" required>
-                                <option value="Planned">Planned</option>
-                                <option value="Promoted">Promoted</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Cancelled">Cancelled</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Purpose (1 sentence max) *</label>
-                        <textarea id="event-purpose" maxlength="150" required></textarea>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Owner *</label>
-                            <input type="text" id="event-owner" placeholder="EQP / Counselor / Name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Target Group *</label>
-                            <select id="event-target" required>
-                                <option value="">Select target...</option>
-                                <option value="Whole quorum">Whole quorum</option>
-                                <option value="New move-ins">New move-ins</option>
-                                <option value="Less-active">Less-active</option>
-                                <option value="Families">Families</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Budget (Planned)</label>
-                            <input type="number" id="event-budget-planned" min="0" step="0.01" placeholder="0.00">
-                        </div>
-                        <div class="form-group">
-                            <label>Budget (Actual)</label>
-                            <input type="number" id="event-budget-actual" min="0" step="0.01" placeholder="0.00">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Focus Five Overlap?</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="event-focus-five">
-                                <label for="event-focus-five">Yes, this event aligns with Focus Five goals</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Roles Needed</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="role-setup" value="Setup">
-                                <label for="role-setup">Setup</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="role-food" value="Food">
-                                <label for="role-food">Food</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="role-teaching" value="Teaching">
-                                <label for="role-teaching">Teaching</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="role-transportation" value="Transportation">
-                                <label for="role-transportation">Transportation</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Promotion Channels</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="promo-quorum" value="Announced in quorum">
-                                <label for="promo-quorum">Announced in quorum</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="promo-text" value="Text">
-                                <label for="promo-text">Text</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="promo-email" value="Email">
-                                <label for="promo-email">Email</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="promo-bishopric" value="Bishopric mention">
-                                <label for="promo-bishopric">Bishopric mention</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Promotion Start Date</label>
-                            <input type="date" id="event-promo-date">
-                        </div>
-                        <div class="form-group">
-                            <label>Estimated Attendance</label>
-                            <input type="number" id="event-attendance" min="0">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>New/Returning Faces?</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="event-new-faces">
-                                <label for="event-new-faces">Yes, we saw new or returning faces</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>What Worked</label>
-                        <textarea id="event-what-worked" placeholder="After the event, note what went well..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>What to Change Next Time</label>
-                        <textarea id="event-what-change" placeholder="After the event, note what to improve..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeEventModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveEvent()">Save Event</button>
-            </div>
-        </div>
+    <div class="sec-head"><h2 class="sec-title" style="font-size:16px">Announcements</h2></div>
+    <div class="toolrow">
+      <button class="btn btn-primary" onclick="copyAnnouncements()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copy this week's announcements</button>
     </div>
+    <p style="font-size:12.5px;color:var(--bone-dim);margin-bottom:26px">Builds a clean text block of upcoming service &amp; activities to paste into the quorum group text.</p>
 
-    <!-- Member Modal -->
-    <div id="member-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="member-modal-title">Add Member</h3>
-                <button class="modal-close" onclick="closeMemberModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="member-form">
-                    <input type="hidden" id="member-id">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Member Name *</label>
-                            <input type="text" id="member-name" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Attendance Category *</label>
-                            <select id="member-category" required>
-                                <option value="">Select category...</option>
-                                <option value="Consistent">Consistent</option>
-                                <option value="Occasional">Occasional</option>
-                                <option value="Rare">Rare</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Last Attended (Month/Year)</label>
-                            <input type="month" id="member-last-attended">
-                        </div>
-                        <div class="form-group">
-                            <label>Engagement Signal *</label>
-                            <select id="member-signal" required>
-                                <option value="">Select signal...</option>
-                                <option value="Improving">Improving</option>
-                                <option value="Flat">Flat</option>
-                                <option value="Declining">Declining</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Event Types Attended</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="attended-spiritual" value="Spiritual">
-                                <label for="attended-spiritual">Spiritual</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="attended-social" value="Social">
-                                <label for="attended-social">Social</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="attended-service" value="Service">
-                                <label for="attended-service">Service</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Invited Recently?</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="member-invited">
-                                <label for="member-invited">Yes, recently invited</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Events Invited To</label>
-                        <input type="text" id="member-events-invited" placeholder="List event names...">
-                    </div>
-                    <div class="form-group">
-                        <label>Follow-Up Owner *</label>
-                        <select id="member-followup" required>
-                            <option value="">Select owner...</option>
-                            <option value="EQP">EQP</option>
-                            <option value="Counselor">Counselor</option>
-                            <option value="Focus Five Brother">Focus Five Brother</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeMemberModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveMember()">Save Member</button>
-            </div>
-        </div>
+    <div class="sec-head"><h2 class="sec-title" style="font-size:16px">Backup</h2></div>
+    <div class="toolrow">
+      <button class="btn btn-ghost" onclick="exportJSON()">Export all data</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">Import data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button class="btn btn-ghost btn-danger" onclick="clearAll()">Clear everything</button>
     </div>
+    <p style="font-size:12.5px;color:var(--bone-dim)">Data lives on this device. Export regularly and hand the file to the next presidency — it's the quorum's memory.</p>
+  </section>
 
-    <!-- Quarter Modal -->
-    <div id="quarter-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="quarter-modal-title">Add Quarter</h3>
-                <button class="modal-close" onclick="closeQuarterModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="quarter-form">
-                    <input type="hidden" id="quarter-id">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Quarter *</label>
-                            <select id="quarter-name" required>
-                                <option value="">Select quarter...</option>
-                                <option value="Q1">Q1 (Jan-Mar)</option>
-                                <option value="Q2">Q2 (Apr-Jun)</option>
-                                <option value="Q3">Q3 (Jul-Sep)</option>
-                                <option value="Q4">Q4 (Oct-Dec)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Year *</label>
-                            <input type="number" id="quarter-year" min="2024" max="2030" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Planned Activities</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="quarter-spiritual" value="Spiritual">
-                                <label for="quarter-spiritual">Spiritual Activity</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="quarter-service" value="Service">
-                                <label for="quarter-service">Service Activity</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="quarter-social" value="Social">
-                                <label for="quarter-social">Social Activity</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="quarter-family" value="Family">
-                                <label for="quarter-family">Family-Friendly Event</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Activities Completed</label>
-                            <input type="number" id="quarter-completed" min="0" placeholder="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Average Attendance</label>
-                            <input type="number" id="quarter-attendance" min="0" placeholder="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Focus Five Alignment</label>
-                            <select id="quarter-alignment">
-                                <option value="None">None</option>
-                                <option value="Partial">Partial</option>
-                                <option value="Strong">Strong</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>What Built Unity?</label>
-                        <textarea id="quarter-unity" placeholder="Note what brought the quorum together..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>What Fell Flat?</label>
-                        <textarea id="quarter-flat" placeholder="Note what didn't work as expected..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>What to Repeat Next Year?</label>
-                        <textarea id="quarter-repeat" placeholder="Note what should definitely be done again..."></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeQuarterModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveQuarter()">Save Quarter</button>
-            </div>
-        </div>
+</main>
+
+<!-- ============ ITEM MODAL ============ -->
+<div class="scrim" id="item-scrim">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="item-modal-title">Add Item</h3>
+      <button class="modal-x" onclick="closeItem()">&times;</button>
     </div>
+    <div class="modal-body">
+      <input type="hidden" id="i-id">
+      <div class="fg">
+        <label>Pillar</label>
+        <div class="pillar-pick">
+          <div class="pp" id="pp-service" onclick="pickPillar('service')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#C8973E" stroke-width="2"><path d="M14 7l-1.5-1.5a2.1 2.1 0 0 0-3 0L3 11.5 6.5 15l6.5-6.5M14 7l2.5 2.5M14 7l5-5 3 3-5 5-3-3M6.5 15l-3 3 1.5 1.5 3-3"/></svg>
+            <b>Service</b>
+          </div>
+          <div class="pp" id="pp-activity" onclick="pickPillar('activity')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#EDE7DB" stroke-width="2"><path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-1.5.7-2.8 1.4-3.8M8.5 12.5C7 14 6 15.5 6 17a6 6 0 0 0 12 0c0-2-1.3-3.8-2.6-5"/></svg>
+            <b>Activity</b>
+          </div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fg">
+          <label>Level</label>
+          <select id="i-level"><option value="stake">Stake</option><option value="ward">Ward</option><option value="quorum" selected>Quorum</option></select>
+        </div>
+        <div class="fg">
+          <label>Status</label>
+          <select id="i-status"><option value="planned">Planned</option><option value="promoted">Promoted</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
+        </div>
+      </div>
+      <div class="fg">
+        <label>Title</label>
+        <input type="text" id="i-title" placeholder="e.g. Move-in help for the Fonua family">
+      </div>
+      <div class="grid2">
+        <div class="fg"><label>Date</label><input type="date" id="i-date"></div>
+        <div class="fg"><label>Point person</label><input type="text" id="i-owner" placeholder="EQP / Counselor / Name"></div>
+      </div>
+      <div class="fg">
+        <label>Purpose (one line)</label>
+        <input type="text" id="i-purpose" maxlength="160" placeholder="Why are we doing this?">
+      </div>
+      <div class="grid2">
+        <div class="fg"><label>Brethren on hand</label><input type="number" id="i-attend" min="0" placeholder="Headcount"></div>
+        <div class="fg"><label>Service hours (total)</label><input type="number" id="i-hours" min="0" step="0.5" placeholder="0"></div>
+      </div>
+      <div class="fg">
+        <label>What's needed</label>
+        <input type="text" id="i-needs" placeholder="Trucks, tools, strong backs, food…">
+      </div>
+      <label class="toggle"><input type="checkbox" id="i-ff"><span>Aligns with Focus Five goals</span></label>
+      <div class="grid2">
+        <div class="fg"><label>What worked</label><textarea id="i-worked" placeholder="After the fact…"></textarea></div>
+        <div class="fg"><label>Change next time</label><textarea id="i-change" placeholder="After the fact…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-danger" id="i-delete" style="display:none" onclick="deleteItem()">Delete</button>
+      <button class="btn btn-ghost" onclick="closeItem()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
 
-    <script>
-        // Data Storage
-        let events = [];
-        let members = [];
-        let quarters = [];
-        let editingEventId = null;
-        let editingMemberId = null;
-        let editingQuarterId = null;
+<!-- ============ BRO MODAL ============ -->
+<div class="scrim" id="bro-scrim">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head">
+      <h3 id="bro-modal-title">Add Brother</h3>
+      <button class="modal-x" onclick="closeBro()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="b-id">
+      <div class="fg"><label>Name</label><input type="text" id="b-name" placeholder="First Last"></div>
+      <div class="grid2">
+        <div class="fg"><label>Phone</label><input type="tel" id="b-phone" placeholder="801-555-0100"></div>
+        <div class="fg"><label>Calling / role</label><input type="text" id="b-role" placeholder="e.g. Counselor, member"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost btn-danger" id="b-delete" style="display:none" onclick="deleteBro()">Delete</button>
+      <button class="btn btn-ghost" onclick="closeBro()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBro()">Save</button>
+    </div>
+  </div>
+</div>
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-            renderAll();
-        });
+<button class="fab" onclick="openItem()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+  Add
+</button>
 
-        // Tab Switching
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
+<div class="toast" id="toast"></div>
 
-        // Event Functions
-        function openEventModal(id = null) {
-            editingEventId = id;
-            const modal = document.getElementById('event-modal');
-            const title = document.getElementById('event-modal-title');
-            
-            if (id) {
-                title.textContent = 'Edit Event';
-                const event = events.find(e => e.id === id);
-                if (event) {
-                    document.getElementById('event-id').value = event.id;
-                    document.getElementById('event-name').value = event.name;
-                    document.getElementById('event-date').value = event.date;
-                    document.getElementById('event-type').value = event.type;
-                    document.getElementById('event-status').value = event.status;
-                    document.getElementById('event-purpose').value = event.purpose;
-                    document.getElementById('event-owner').value = event.owner;
-                    document.getElementById('event-target').value = event.target;
-                    document.getElementById('event-budget-planned').value = event.budgetPlanned || '';
-                    document.getElementById('event-budget-actual').value = event.budgetActual || '';
-                    document.getElementById('event-focus-five').checked = event.focusFive;
-                    document.getElementById('event-promo-date').value = event.promoDate || '';
-                    document.getElementById('event-attendance').value = event.attendance || '';
-                    document.getElementById('event-new-faces').checked = event.newFaces;
-                    document.getElementById('event-what-worked').value = event.whatWorked || '';
-                    document.getElementById('event-what-change').value = event.whatChange || '';
-                    
-                    // Roles
-                    document.getElementById('role-setup').checked = event.roles?.includes('Setup');
-                    document.getElementById('role-food').checked = event.roles?.includes('Food');
-                    document.getElementById('role-teaching').checked = event.roles?.includes('Teaching');
-                    document.getElementById('role-transportation').checked = event.roles?.includes('Transportation');
-                    
-                    // Promotion
-                    document.getElementById('promo-quorum').checked = event.promotion?.includes('Announced in quorum');
-                    document.getElementById('promo-text').checked = event.promotion?.includes('Text');
-                    document.getElementById('promo-email').checked = event.promotion?.includes('Email');
-                    document.getElementById('promo-bishopric').checked = event.promotion?.includes('Bishopric mention');
-                }
-            } else {
-                title.textContent = 'Add Event';
-                document.getElementById('event-form').reset();
-                document.getElementById('event-id').value = '';
-            }
-            
-            modal.classList.add('active');
-        }
+<script>
+/* ============================================================
+   MUSTER — Elders Quorum Service & Activities Board
+   Single-file. Data persists in localStorage on this device.
+============================================================ */
 
-        function closeEventModal() {
-            document.getElementById('event-modal').classList.remove('active');
-            document.getElementById('event-form').reset();
-            editingEventId = null;
-        }
+const LEVELS = ['stake','ward','quorum'];
+const LEVEL_NAME = {stake:'Stake', ward:'Ward', quorum:'Quorum'};
+const LEVEL_PIPS = {stake:3, ward:2, quorum:1};
+const PILLAR_NAME = {service:'Service', activity:'Activity'};
+const STATUS_FLOW = ['planned','promoted','completed'];
 
-        function saveEvent() {
-            const form = document.getElementById('event-form');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+let items = [];
+let brethren = [];
+let editingItem = null;
+let editingBro = null;
+let pickedPillar = 'service';
+let filter = { service:'all', activity:'all' };
+let search = { service:'', activity:'' };
 
-            const roles = [];
-            if (document.getElementById('role-setup').checked) roles.push('Setup');
-            if (document.getElementById('role-food').checked) roles.push('Food');
-            if (document.getElementById('role-teaching').checked) roles.push('Teaching');
-            if (document.getElementById('role-transportation').checked) roles.push('Transportation');
+/* ---------- icons ---------- */
+const SVG = {
+  service:'<svg viewBox="0 0 24 24" fill="none" stroke="#C8973E" stroke-width="2"><path d="M14 7l-1.5-1.5a2.1 2.1 0 0 0-3 0L3 11.5 6.5 15l6.5-6.5M14 7l5-5 3 3-5 5-3-3M6.5 15l-3 3 1.5 1.5 3-3"/></svg>',
+  activity:'<svg viewBox="0 0 24 24" fill="none" stroke="#EDE7DB" stroke-width="2"><path d="M12 2s4 4 4 8a4 4 0 0 1-8 0c0-1.5.7-2.8 1.4-3.8M8.5 12.5C7 14 6 15.5 6 17a6 6 0 0 0 12 0c0-2-1.3-3.8-2.6-5"/></svg>',
+  phone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.4-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  msg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.8-.9L3 20l1.3-3.9A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+};
 
-            const promotion = [];
-            if (document.getElementById('promo-quorum').checked) promotion.push('Announced in quorum');
-            if (document.getElementById('promo-text').checked) promotion.push('Text');
-            if (document.getElementById('promo-email').checked) promotion.push('Email');
-            if (document.getElementById('promo-bishopric').checked) promotion.push('Bishopric mention');
+function pipsHTML(level, cls='mp'){
+  const n = LEVEL_PIPS[level];
+  let h = '<span class="mini-pips">';
+  for(let i=0;i<3;i++) h += `<span class="${cls}${i<n?' on':''}"></span>`;
+  return h + '</span>';
+}
 
-            const eventData = {
-                id: editingEventId || Date.now().toString(),
-                name: document.getElementById('event-name').value,
-                date: document.getElementById('event-date').value,
-                type: document.getElementById('event-type').value,
-                status: document.getElementById('event-status').value,
-                purpose: document.getElementById('event-purpose').value,
-                owner: document.getElementById('event-owner').value,
-                target: document.getElementById('event-target').value,
-                budgetPlanned: parseFloat(document.getElementById('event-budget-planned').value) || 0,
-                budgetActual: parseFloat(document.getElementById('event-budget-actual').value) || 0,
-                focusFive: document.getElementById('event-focus-five').checked,
-                roles: roles,
-                promotion: promotion,
-                promoDate: document.getElementById('event-promo-date').value,
-                attendance: parseInt(document.getElementById('event-attendance').value) || 0,
-                newFaces: document.getElementById('event-new-faces').checked,
-                whatWorked: document.getElementById('event-what-worked').value,
-                whatChange: document.getElementById('event-what-change').value
-            };
+/* ---------- dates ---------- */
+function parseDate(d){ if(!d) return null; const x=new Date(d+'T00:00:00'); return isNaN(x)?null:x; }
+function todayMid(){ const t=new Date(); t.setHours(0,0,0,0); return t; }
+function daysUntil(d){ const x=parseDate(d); if(!x) return null; return Math.round((x-todayMid())/86400000); }
+function fmtDate(d){ const x=parseDate(d); if(!x) return 'No date'; return x.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
+function whenLabel(d){
+  const n = daysUntil(d);
+  if(n===null) return {txt:'No date', cls:'past'};
+  if(n===0) return {txt:'Today', cls:'today'};
+  if(n===1) return {txt:'Tomorrow', cls:''};
+  if(n<0) return {txt:`${Math.abs(n)}d ago`, cls:'past'};
+  if(n<=14) return {txt:`In ${n} days`, cls:''};
+  return {txt:fmtDate(d), cls:''};
+}
 
-            if (editingEventId) {
-                const index = events.findIndex(e => e.id === editingEventId);
-                events[index] = eventData;
-            } else {
-                events.push(eventData);
-            }
+/* ---------- persistence ---------- */
+function save(){
+  localStorage.setItem('muster-items', JSON.stringify(items));
+  localStorage.setItem('muster-brethren', JSON.stringify(brethren));
+}
+function load(){
+  const i = localStorage.getItem('muster-items');
+  const b = localStorage.getItem('muster-brethren');
+  if(i){ items = JSON.parse(i); } else { seed(); }
+  if(b){ brethren = JSON.parse(b); }
+}
+function seed(){
+  const iso = (offset)=>{ const d=new Date(); d.setDate(d.getDate()+offset); return d.toISOString().slice(0,10); };
+  items = [
+    {id:uid(),pillar:'service',level:'stake',title:'Stake JustServe day at the food bank',date:iso(9),status:'promoted',owner:'EQ Presidency',purpose:'Stake-wide morning of sorting and packing donations.',attend:0,hours:0,needs:'Carpools, willing hands',ff:true,worked:'',change:''},
+    {id:uid(),pillar:'service',level:'ward',title:'Yard cleanup for Sister Tupou',date:iso(4),status:'planned',owner:'1st Counselor',purpose:'Mow, trim, and haul for a widow in the ward.',attend:0,hours:0,needs:'Mowers, trailer, trimmers',ff:false,worked:'',change:''},
+    {id:uid(),pillar:'service',level:'quorum',title:'Move-in help for the Fonua family',date:iso(2),status:'promoted',owner:'Bro. Latu',purpose:'Unload the truck and set up beds — new move-ins.',attend:0,hours:0,needs:'Trucks, strong backs, pizza',ff:true,worked:'',change:''},
+    {id:uid(),pillar:'service',level:'quorum',title:'Snow removal rotation',date:iso(-6),status:'completed',owner:'Bro. Vea',purpose:'Cleared driveways for three older couples.',attend:7,hours:9,needs:'Shovels, blowers',ff:false,worked:'Group text the night before filled every slot.',change:'Start the rotation earlier in the season.'},
+    {id:uid(),pillar:'activity',level:'stake',title:'Stake temple trip',date:iso(20),status:'planned',owner:'EQ Presidency',purpose:'Quorum block on the stake temple night.',attend:0,hours:0,needs:'Carpools',ff:true,worked:'',change:''},
+    {id:uid(),pillar:'activity',level:'ward',title:'Ward campout — fathers & sons',date:iso(34),status:'planned',owner:'2nd Counselor',purpose:'Overnight in the canyon, Dutch-oven dinner.',attend:0,hours:0,needs:'Tents, griddles, firewood',ff:false,worked:'',change:''},
+    {id:uid(),pillar:'activity',level:'quorum',title:'Brotherhood BBQ + cornhole',date:iso(5),status:'promoted',owner:'Bro. Maka',purpose:'Low-key Friday to pull in the brethren we miss.',attend:0,hours:0,needs:'Grill, meat, chairs',ff:true,worked:'',change:''},
+    {id:uid(),pillar:'activity',level:'quorum',title:'Pickup basketball night',date:iso(-3),status:'completed',owner:'Bro. Sione',purpose:'Standing Wednesday run at the stake center.',attend:11,hours:0,needs:'Gym key, water',ff:false,worked:'Two less-active brothers came and stayed late.',change:'Bump start time 30 min later for work schedules.'}
+  ];
+  brethren = [
+    {id:uid(),name:'Sione Latu',phone:'8015550142',role:'Quorum President',count:6},
+    {id:uid(),name:'David Vea',phone:'8015550178',role:'1st Counselor',count:5},
+    {id:uid(),name:'Mosese Maka',phone:'8015550133',role:'2nd Counselor',count:4},
+    {id:uid(),name:'Tevita Fonua',phone:'',role:'New move-in',count:1}
+  ];
+  save();
+}
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
-            saveData();
-            renderAll();
-            closeEventModal();
-        }
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+}
 
-        function deleteEvent(id) {
-            if (confirm('Are you sure you want to delete this event?')) {
-                events = events.filter(e => e.id !== id);
-                saveData();
-                renderAll();
-            }
-        }
+/* ---------- nav ---------- */
+document.getElementById('nav').addEventListener('click', e=>{
+  const b=e.target.closest('.navbtn'); if(!b) return; showView(b.dataset.view);
+});
+function showView(v){
+  document.querySelectorAll('.navbtn').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
 
-        // Member Functions
-        function openMemberModal(id = null) {
-            editingMemberId = id;
-            const modal = document.getElementById('member-modal');
-            const title = document.getElementById('member-modal-title');
-            
-            if (id) {
-                title.textContent = 'Edit Member';
-                const member = members.find(m => m.id === id);
-                if (member) {
-                    document.getElementById('member-id').value = member.id;
-                    document.getElementById('member-name').value = member.name;
-                    document.getElementById('member-category').value = member.category;
-                    document.getElementById('member-last-attended').value = member.lastAttended || '';
-                    document.getElementById('member-signal').value = member.signal;
-                    document.getElementById('member-invited').checked = member.invited;
-                    document.getElementById('member-events-invited').value = member.eventsInvited || '';
-                    document.getElementById('member-followup').value = member.followup;
-                    
-                    document.getElementById('attended-spiritual').checked = member.eventTypes?.includes('Spiritual');
-                    document.getElementById('attended-social').checked = member.eventTypes?.includes('Social');
-                    document.getElementById('attended-service').checked = member.eventTypes?.includes('Service');
-                }
-            } else {
-                title.textContent = 'Add Member';
-                document.getElementById('member-form').reset();
-                document.getElementById('member-id').value = '';
-            }
-            
-            modal.classList.add('active');
-        }
+/* ============ RENDER ============ */
+function renderAll(){ renderStats(); renderBoard(); renderOnDeck(); renderList('service'); renderList('activity'); renderSegs(); renderBrethren(); }
 
-        function closeMemberModal() {
-            document.getElementById('member-modal').classList.remove('active');
-            document.getElementById('member-form').reset();
-            editingMemberId = null;
-        }
+function activeItems(){ return items.filter(i=>i.status!=='cancelled'); }
 
-        function saveMember() {
-            const form = document.getElementById('member-form');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+function renderStats(){
+  const active = items.filter(i=>i.status==='planned'||i.status==='promoted').length;
+  const next7 = items.filter(i=>{const n=daysUntil(i.date); return n!==null && n>=0 && n<=7 && i.status!=='cancelled' && i.status!=='completed';}).length;
+  const hours = items.reduce((s,i)=>s+(Number(i.hours)||0),0);
+  const mobilized = items.filter(i=>i.status==='completed').reduce((s,i)=>s+(Number(i.attend)||0),0);
+  const stats=[
+    {n:active, l:'Active items'},
+    {n:next7, l:'In next 7 days'},
+    {n:hours, l:'Service hours logged'},
+    {n:mobilized, l:'Brethren mobilized'}
+  ];
+  document.getElementById('stats').innerHTML = stats.map(s=>
+    `<div class="stat"><div class="n">${s.n}</div><div class="l">${s.l}</div></div>`).join('');
+}
 
-            const eventTypes = [];
-            if (document.getElementById('attended-spiritual').checked) eventTypes.push('Spiritual');
-            if (document.getElementById('attended-social').checked) eventTypes.push('Social');
-            if (document.getElementById('attended-service').checked) eventTypes.push('Service');
+function cellFor(pillar, level){
+  const list = items.filter(i=>i.pillar===pillar && i.level===level && i.status!=='cancelled');
+  const open = list.filter(i=>i.status!=='completed');
+  const upcoming = open.filter(i=>{const n=daysUntil(i.date); return n===null||n>=0;})
+                       .sort((a,b)=>(daysUntil(a.date)??1e9)-(daysUntil(b.date)??1e9));
+  const next = upcoming[0];
+  let inner;
+  if(next){
+    const w=whenLabel(next.date);
+    inner=`<div class="cell-next"><div class="nx">${esc(next.title)}</div><div class="when">${w.txt}</div></div>`;
+  } else {
+    inner=`<div class="cell-next"><div class="cell-empty">Nothing on deck</div></div>`;
+  }
+  const cnt = open.length;
+  return `<div class="cell" tabindex="0" role="button" onclick="jumpTo('${pillar}','${level}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();jumpTo('${pillar}','${level}')}">
+    <div class="cell-top"><span class="c${cnt?'':' zero'}">${cnt}</span><span class="ct">open</span></div>
+    ${inner}
+  </div>`;
+}
 
-            const memberData = {
-                id: editingMemberId || Date.now().toString(),
-                name: document.getElementById('member-name').value,
-                category: document.getElementById('member-category').value,
-                lastAttended: document.getElementById('member-last-attended').value,
-                signal: document.getElementById('member-signal').value,
-                eventTypes: eventTypes,
-                invited: document.getElementById('member-invited').checked,
-                eventsInvited: document.getElementById('member-events-invited').value,
-                followup: document.getElementById('member-followup').value
-            };
+function renderBoard(){
+  const cols = LEVELS.map(l=>
+    `<div class="colhead"><div class="name">${LEVEL_NAME[l]}</div><div class="pips">${pipsHTML(l,'pip')}</div></div>`).join('');
+  const top = `<div class="board-top"><div class="corner"><span>Pillar ╲ Level</span></div>${cols}</div>`;
 
-            if (editingMemberId) {
-                const index = members.findIndex(m => m.id === editingMemberId);
-                members[index] = memberData;
-            } else {
-                members.push(memberData);
-            }
+  const rows = ['service','activity'].map(p=>{
+    const label = `<div class="rowlabel">
+        <div class="pillar">${SVG[p]}<b>${p==='service'?'Service':'Activities'}</b></div>
+        <small>${p==='service'?'Lift others, hands to work':'Gather &amp; fellowship'}</small>
+      </div>`;
+    const cells = LEVELS.map(l=>
+      `<div class="cell-w"><span class="mlabel">${LEVEL_NAME[l]} ${'•'.repeat(LEVEL_PIPS[l])}</span>${cellFor(p,l)}</div>`).join('');
+    return `<div class="board-row">${label}<div class="cells-m">${cells}</div></div>`;
+  }).join('');
 
-            saveData();
-            renderAll();
-            closeMemberModal();
-        }
+  document.getElementById('board').innerHTML = top + rows;
+}
 
-        function deleteMember(id) {
-            if (confirm('Are you sure you want to delete this member?')) {
-                members = members.filter(m => m.id !== id);
-                saveData();
-                renderAll();
-            }
-        }
+function jumpTo(pillar, level){
+  filter[pillar]=level;
+  showView(pillar);
+  renderSegs(); renderList(pillar);
+}
 
-        // Quarter Functions
-        function openQuarterModal(id = null) {
-            editingQuarterId = id;
-            const modal = document.getElementById('quarter-modal');
-            const title = document.getElementById('quarter-modal-title');
-            
-            if (id) {
-                title.textContent = 'Edit Quarter';
-                const quarter = quarters.find(q => q.id === id);
-                if (quarter) {
-                    document.getElementById('quarter-id').value = quarter.id;
-                    document.getElementById('quarter-name').value = quarter.name;
-                    document.getElementById('quarter-year').value = quarter.year;
-                    document.getElementById('quarter-completed').value = quarter.completed || '';
-                    document.getElementById('quarter-attendance').value = quarter.attendance || '';
-                    document.getElementById('quarter-alignment').value = quarter.alignment || 'None';
-                    document.getElementById('quarter-unity').value = quarter.unity || '';
-                    document.getElementById('quarter-flat').value = quarter.flat || '';
-                    document.getElementById('quarter-repeat').value = quarter.repeat || '';
-                    
-                    document.getElementById('quarter-spiritual').checked = quarter.planned?.includes('Spiritual');
-                    document.getElementById('quarter-service').checked = quarter.planned?.includes('Service');
-                    document.getElementById('quarter-social').checked = quarter.planned?.includes('Social');
-                    document.getElementById('quarter-family').checked = quarter.planned?.includes('Family');
-                }
-            } else {
-                title.textContent = 'Add Quarter';
-                document.getElementById('quarter-form').reset();
-                document.getElementById('quarter-id').value = '';
-                document.getElementById('quarter-year').value = new Date().getFullYear();
-            }
-            
-            modal.classList.add('active');
-        }
+function renderOnDeck(){
+  const list = items.filter(i=>{
+    const n=daysUntil(i.date);
+    return i.status!=='cancelled' && i.status!=='completed' && n!==null && n>=0 && n<=14;
+  }).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
+  document.getElementById('ondeck-sub').textContent = list.length? `${list.length} coming up` : '';
+  const el=document.getElementById('ondeck');
+  if(!list.length){ el.innerHTML = emptyState('All quiet','Nothing scheduled in the next two weeks. Tap Add to put something on the board.'); return; }
+  el.innerHTML = list.map(itemCard).join('');
+}
 
-        function closeQuarterModal() {
-            document.getElementById('quarter-modal').classList.remove('active');
-            document.getElementById('quarter-form').reset();
-            editingQuarterId = null;
-        }
+function renderList(pillar){
+  const lvl = filter[pillar];
+  const q = (search[pillar]||'').toLowerCase();
+  let list = items.filter(i=>i.pillar===pillar);
+  if(lvl!=='all') list=list.filter(i=>i.level===lvl);
+  if(q) list=list.filter(i=>(i.title+' '+(i.purpose||'')+' '+(i.owner||'')).toLowerCase().includes(q));
+  // order: open by date asc, then completed, then cancelled
+  const rank=s=>s==='cancelled'?3:(s==='completed'?2:0);
+  list.sort((a,b)=>{
+    const r=rank(a.status)-rank(b.status); if(r) return r;
+    return (daysUntil(a.date)??1e9)-(daysUntil(b.date)??1e9);
+  });
+  const el=document.getElementById('list-'+pillar);
+  if(!list.length){
+    el.innerHTML = emptyState('Nothing here yet',
+      pillar==='service'?'Add a service project at the stake, ward, or quorum level.':'Add an activity to gather the brethren.');
+    return;
+  }
+  el.innerHTML = list.map(itemCard).join('');
+}
 
-        function saveQuarter() {
-            const form = document.getElementById('quarter-form');
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
+function itemCard(i){
+  const w=whenLabel(i.date);
+  const statusLabel={planned:'Planned',promoted:'Promoted',completed:'Completed',cancelled:'Cancelled'}[i.status];
+  const cls = i.status==='completed'?'done':(i.status==='cancelled'?'cancelled':'');
+  const canAdvance = STATUS_FLOW.indexOf(i.status)>-1 && i.status!=='completed';
+  const nextStatus = canAdvance ? STATUS_FLOW[STATUS_FLOW.indexOf(i.status)+1] : null;
+  const advLabel = {promoted:'Promote',completed:'Mark done'}[nextStatus];
 
-            const planned = [];
-            if (document.getElementById('quarter-spiritual').checked) planned.push('Spiritual');
-            if (document.getElementById('quarter-service').checked) planned.push('Service');
-            if (document.getElementById('quarter-social').checked) planned.push('Social');
-            if (document.getElementById('quarter-family').checked) planned.push('Family');
+  const facts=[];
+  if(i.owner) facts.push(`<div class="fact"><span class="fl">Point</span><span class="fv">${esc(i.owner)}</span></div>`);
+  if(i.needs) facts.push(`<div class="fact"><span class="fl">Needs</span><span class="fv">${esc(i.needs)}</span></div>`);
+  if(i.attend) facts.push(`<div class="fact"><span class="fl">On hand</span><span class="fv accent">${i.attend}</span></div>`);
+  if(i.hours) facts.push(`<div class="fact"><span class="fl">Hours</span><span class="fv accent">${i.hours}</span></div>`);
 
-            const quarterData = {
-                id: editingQuarterId || Date.now().toString(),
-                name: document.getElementById('quarter-name').value,
-                year: parseInt(document.getElementById('quarter-year').value),
-                planned: planned,
-                completed: parseInt(document.getElementById('quarter-completed').value) || 0,
-                attendance: parseInt(document.getElementById('quarter-attendance').value) || 0,
-                alignment: document.getElementById('quarter-alignment').value,
-                unity: document.getElementById('quarter-unity').value,
-                flat: document.getElementById('quarter-flat').value,
-                repeat: document.getElementById('quarter-repeat').value
-            };
+  return `<div class="item ${cls}">
+    <div class="item-l"></div>
+    <div class="item-head">
+      <div style="flex:1;min-width:0">
+        <div class="item-title">${esc(i.title)}</div>
+        <div class="item-meta">
+          <span class="chip pillar-${i.pillar}">${PILLAR_NAME[i.pillar]}</span>
+          <span class="chip tier">${LEVEL_NAME[i.level]} ${pipsHTML(i.level)}</span>
+          <span class="chip status s-${i.status}">${statusLabel}</span>
+          ${i.status!=='completed'&&i.status!=='cancelled'?`<span class="chip when ${w.cls}">${w.txt}</span>`:`<span class="chip when past">${fmtDate(i.date)}</span>`}
+          ${i.ff?`<span class="chip ff">★ Focus Five</span>`:''}
+        </div>
+      </div>
+    </div>
+    ${i.purpose?`<div class="item-purpose">${esc(i.purpose)}</div>`:''}
+    <div class="item-foot">
+      <div class="facts">${facts.join('')||'<span style="font-size:12px;color:var(--bone-faint)">No details yet</span>'}</div>
+      <div class="actions">
+        ${nextStatus?`<button class="btn btn-sm btn-advance" onclick="advance('${i.id}')">${advLabel}</button>`:''}
+        <button class="icon-btn" title="Edit" onclick="openItem('${i.id}')">${SVG.edit}</button>
+      </div>
+    </div>
+  </div>`;
+}
 
-            if (editingQuarterId) {
-                const index = quarters.findIndex(q => q.id === editingQuarterId);
-                quarters[index] = quarterData;
-            } else {
-                quarters.push(quarterData);
-            }
+function emptyState(h,p){
+  return `<div class="empty">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9h11l-1.2 3.2A4 4 0 0 1 9 14.8V17h4v2H7v-2v-2.4A6 6 0 0 1 2.4 9.6L3 9z"/><rect x="6" y="19" width="12" height="2" rx="1"/></svg>
+    <h3>${h}</h3><p>${p}</p></div>`;
+}
 
-            saveData();
-            renderAll();
-            closeQuarterModal();
-        }
+/* ---------- segmented filters ---------- */
+function renderSegs(){
+  ['service','activity'].forEach(p=>{
+    const counts={all:items.filter(i=>i.pillar===p).length};
+    LEVELS.forEach(l=>counts[l]=items.filter(i=>i.pillar===p&&i.level===l).length);
+    const opts=[['all','All']].concat(LEVELS.map(l=>[l,LEVEL_NAME[l]]));
+    document.getElementById('seg-'+p).innerHTML = opts.map(([key,label])=>{
+      const pips = key==='all'?'':pipsHTML(key);
+      return `<button class="${filter[p]===key?'active':''}" onclick="setFilter('${p}','${key}')">${label} ${pips}<span style="opacity:.6;margin-left:2px">${counts[key]}</span></button>`;
+    }).join('');
+  });
+}
+function setFilter(p,key){ filter[p]=key; renderSegs(); renderList(p); }
 
-        function deleteQuarter(id) {
-            if (confirm('Are you sure you want to delete this quarter?')) {
-                quarters = quarters.filter(q => q.id !== id);
-                saveData();
-                renderAll();
-            }
-        }
+document.getElementById('search-service').addEventListener('input',e=>{search.service=e.target.value;renderList('service');});
+document.getElementById('search-activity').addEventListener('input',e=>{search.activity=e.target.value;renderList('activity');});
 
-        // Render Functions
-        function renderAll() {
-            renderDashboard();
-            renderEvents();
-            renderMembers();
-            renderQuarters();
-        }
+/* ---------- status advance ---------- */
+function advance(id){
+  const i=items.find(x=>x.id===id); if(!i) return;
+  const idx=STATUS_FLOW.indexOf(i.status);
+  const next=STATUS_FLOW[idx+1];
+  if(next==='completed'){
+    // quick capture
+    const a=prompt('Marked done. How many brethren showed up? (optional)', i.attend||'');
+    if(a!==null && a!=='') i.attend=Number(a)||i.attend;
+    if(i.pillar==='service'){
+      const h=prompt('Service hours total? (headcount × hours, optional)', i.hours||'');
+      if(h!==null && h!=='') i.hours=Number(h)||i.hours;
+    }
+  }
+  i.status=next; save(); renderAll();
+  toast(next==='completed'?'Logged. Well done.':'Status updated.');
+}
 
-        function renderDashboard() {
-            // Stats
-            const totalEvents = events.length;
-            const completedEvents = events.filter(e => e.status === 'Completed').length;
-            const upcomingEvents = events.filter(e => e.status === 'Planned' || e.status === 'Promoted').length;
-            const avgAttendance = events.length > 0 
-                ? Math.round(events.reduce((sum, e) => sum + (e.attendance || 0), 0) / events.length)
-                : 0;
+/* ============ ITEM MODAL ============ */
+function pickPillar(p){
+  pickedPillar=p;
+  document.getElementById('pp-service').classList.toggle('sel',p==='service');
+  document.getElementById('pp-activity').classList.toggle('sel',p==='activity');
+}
+function openItem(id){
+  editingItem = id||null;
+  const m=document.getElementById('item-scrim');
+  const del=document.getElementById('i-delete');
+  if(id){
+    const i=items.find(x=>x.id===id); if(!i) return;
+    document.getElementById('item-modal-title').textContent='Edit Item';
+    pickPillar(i.pillar);
+    document.getElementById('i-level').value=i.level;
+    document.getElementById('i-status').value=i.status;
+    document.getElementById('i-title').value=i.title||'';
+    document.getElementById('i-date').value=i.date||'';
+    document.getElementById('i-owner').value=i.owner||'';
+    document.getElementById('i-purpose').value=i.purpose||'';
+    document.getElementById('i-attend').value=i.attend||'';
+    document.getElementById('i-hours').value=i.hours||'';
+    document.getElementById('i-needs').value=i.needs||'';
+    document.getElementById('i-ff').checked=!!i.ff;
+    document.getElementById('i-worked').value=i.worked||'';
+    document.getElementById('i-change').value=i.change||'';
+    del.style.display='inline-flex';
+  } else {
+    document.getElementById('item-modal-title').textContent='Add Item';
+    // smart defaults from current view
+    const cur=document.querySelector('.navbtn.active').dataset.view;
+    pickPillar(cur==='activity'?'activity':'service');
+    const lvl = (cur==='service'||cur==='activity') && filter[cur]!=='all' ? filter[cur] : 'quorum';
+    document.getElementById('i-level').value=lvl;
+    document.getElementById('i-status').value='planned';
+    ['i-title','i-date','i-owner','i-purpose','i-attend','i-hours','i-needs','i-worked','i-change'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('i-ff').checked=false;
+    del.style.display='none';
+  }
+  m.classList.add('open');
+}
+function closeItem(){ document.getElementById('item-scrim').classList.remove('open'); }
+function saveItem(){
+  const title=document.getElementById('i-title').value.trim();
+  if(!title){ toast('Give it a title first.'); return; }
+  const data={
+    pillar:pickedPillar,
+    level:document.getElementById('i-level').value,
+    status:document.getElementById('i-status').value,
+    title,
+    date:document.getElementById('i-date').value,
+    owner:document.getElementById('i-owner').value.trim(),
+    purpose:document.getElementById('i-purpose').value.trim(),
+    attend:Number(document.getElementById('i-attend').value)||0,
+    hours:Number(document.getElementById('i-hours').value)||0,
+    needs:document.getElementById('i-needs').value.trim(),
+    ff:document.getElementById('i-ff').checked,
+    worked:document.getElementById('i-worked').value.trim(),
+    change:document.getElementById('i-change').value.trim()
+  };
+  if(editingItem){ const idx=items.findIndex(x=>x.id===editingItem); items[idx]={...items[idx],...data}; }
+  else { items.push({id:uid(),...data}); }
+  save(); renderAll(); closeItem(); toast(editingItem?'Saved.':'Added to the board.');
+}
+function deleteItem(){
+  if(!editingItem) return;
+  if(!confirm('Delete this item?')) return;
+  items=items.filter(x=>x.id!==editingItem);
+  save(); renderAll(); closeItem(); toast('Deleted.');
+}
 
-            document.getElementById('stat-total-events').textContent = totalEvents;
-            document.getElementById('stat-completed-events').textContent = completedEvents;
-            document.getElementById('stat-upcoming-events').textContent = upcomingEvents;
-            document.getElementById('stat-avg-attendance').textContent = avgAttendance;
+/* ============ BRETHREN ============ */
+function renderBrethren(){
+  const r=document.getElementById('roster');
+  if(!brethren.length){
+    r.innerHTML=emptyState('No brethren yet','Add your quorum so you can call or text them in one tap.');
+  } else {
+    r.innerHTML=[...brethren].sort((a,b)=>a.name.localeCompare(b.name)).map(broCard).join('');
+  }
+  renderLeaderboard();
+}
+function broCard(b){
+  const initials=b.name.split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
+  const tel=b.phone?b.phone.replace(/[^\d+]/g,''):'';
+  return `<div class="bro">
+    <div class="ava">${initials||'?'}</div>
+    <div class="info">
+      <div class="nm">${esc(b.name)}</div>
+      <div class="role">${esc(b.role||'')}${b.phone?` · ${esc(b.phone)}`:''}</div>
+    </div>
+    <div class="tally"><div class="tn">${b.count||0}</div><div class="tl">showed</div></div>
+    <div class="ctl">
+      ${tel?`<a class="tel" href="tel:${tel}"><button class="icon-btn" title="Call">${SVG.phone}</button></a>`:''}
+      ${tel?`<a class="tel" href="sms:${tel}"><button class="icon-btn" title="Text">${SVG.msg}</button></a>`:''}
+      <button class="icon-btn" title="+1 showed up" onclick="bumpBro('${b.id}')" style="font-family:'Oswald';font-weight:700">+1</button>
+      <button class="icon-btn" title="Edit" onclick="openBro('${b.id}')">${SVG.edit}</button>
+    </div>
+  </div>`;
+}
+function renderLeaderboard(){
+  const top=[...brethren].sort((a,b)=>(b.count||0)-(a.count||0)).slice(0,8);
+  const el=document.getElementById('leaderboard');
+  if(!top.length || top[0].count===0){ el.innerHTML=`<p style="font-size:12.5px;color:var(--bone-faint)">Tap <b style="color:var(--brass)">+1</b> on a brother each time he shows up. The roll builds itself.</p>`; return; }
+  const max=top[0].count||1;
+  el.innerHTML=top.map((b,idx)=>`<div class="lead-row">
+    <span class="lead-rank ${idx===0?'top':''}">${idx+1}</span>
+    <span class="lead-nm">${esc(b.name)}</span>
+    <span class="lead-bar" style="width:${Math.max(8,(b.count/max)*90)}px"></span>
+    <span class="lead-ct">${b.count||0}</span>
+  </div>`).join('');
+}
+function bumpBro(id){ const b=brethren.find(x=>x.id===id); if(!b) return; b.count=(b.count||0)+1; save(); renderBrethren(); toast(`${b.name.split(' ')[0]} +1`); }
 
-            // Engagement stats
-            const consistent = members.filter(m => m.category === 'Consistent').length;
-            const occasional = members.filter(m => m.category === 'Occasional').length;
-            const rare = members.filter(m => m.category === 'Rare').length;
-            const improving = members.filter(m => m.signal === 'Improving').length;
+function openBro(id){
+  editingBro=id||null;
+  const del=document.getElementById('b-delete');
+  if(id){
+    const b=brethren.find(x=>x.id===id); if(!b) return;
+    document.getElementById('bro-modal-title').textContent='Edit Brother';
+    document.getElementById('b-name').value=b.name||'';
+    document.getElementById('b-phone').value=b.phone||'';
+    document.getElementById('b-role').value=b.role||'';
+    del.style.display='inline-flex';
+  } else {
+    document.getElementById('bro-modal-title').textContent='Add Brother';
+    ['b-name','b-phone','b-role'].forEach(x=>document.getElementById(x).value='');
+    del.style.display='none';
+  }
+  document.getElementById('bro-scrim').classList.add('open');
+}
+function closeBro(){ document.getElementById('bro-scrim').classList.remove('open'); }
+function saveBro(){
+  const name=document.getElementById('b-name').value.trim();
+  if(!name){ toast('Name first.'); return; }
+  const data={name,phone:document.getElementById('b-phone').value.trim(),role:document.getElementById('b-role').value.trim()};
+  if(editingBro){ const idx=brethren.findIndex(x=>x.id===editingBro); brethren[idx]={...brethren[idx],...data}; }
+  else { brethren.push({id:uid(),count:0,...data}); }
+  save(); renderBrethren(); closeBro(); toast('Saved.');
+}
+function deleteBro(){
+  if(!editingBro) return;
+  if(!confirm('Remove this brother?')) return;
+  brethren=brethren.filter(x=>x.id!==editingBro);
+  save(); renderBrethren(); closeBro();
+}
 
-            document.getElementById('stat-consistent').textContent = consistent;
-            document.getElementById('stat-occasional').textContent = occasional;
-            document.getElementById('stat-rare').textContent = rare;
-            document.getElementById('stat-improving').textContent = improving;
+/* ============ ANNOUNCEMENTS ============ */
+function copyAnnouncements(){
+  const up = items.filter(i=>{const n=daysUntil(i.date); return i.status!=='cancelled'&&i.status!=='completed'&&n!==null&&n>=0&&n<=14;})
+                  .sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
+  if(!up.length){ toast('Nothing upcoming to announce.'); return; }
+  let txt='ELDERS QUORUM — NEXT 2 WEEKS\n\n';
+  ['service','activity'].forEach(p=>{
+    const rows=up.filter(i=>i.pillar===p);
+    if(!rows.length) return;
+    txt += (p==='service'?'SERVICE\n':'ACTIVITIES\n');
+    rows.forEach(i=>{
+      txt += `• [${LEVEL_NAME[i.level]}] ${i.title} — ${fmtDate(i.date)}`;
+      if(i.owner) txt+=` (${i.owner})`;
+      txt+='\n';
+      if(i.needs) txt+=`   Bring: ${i.needs}\n`;
+    });
+    txt+='\n';
+  });
+  txt+='Put your shoulder to the wheel.';
+  navigator.clipboard?.writeText(txt).then(
+    ()=>toast('Copied — paste into the quorum text.'),
+    ()=>{ prompt('Copy this:', txt); }
+  );
+}
 
-            // Recent activity
-            const recentEvents = [...events].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
-            const activityHtml = recentEvents.length > 0 ? `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Event</th>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Attendance</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${recentEvents.map(e => `
-                            <tr>
-                                <td><strong>${e.name}</strong></td>
-                                <td>${new Date(e.date).toLocaleDateString()}</td>
-                                <td><span class="badge badge-${e.type.toLowerCase()}">${e.type}</span></td>
-                                <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
-                                <td>${e.attendance || 'TBD'}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            ` : '<div class="empty-state">No events yet. Add your first event to get started!</div>';
+/* ============ BACKUP ============ */
+function exportJSON(){
+  const data={items,brethren,exported:new Date().toISOString(),app:'muster'};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download=`muster-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url); toast('Backup downloaded.');
+}
+function importJSON(e){
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.items) items=d.items;
+      if(d.brethren) brethren=d.brethren;
+      save(); renderAll(); toast('Data imported.');
+    }catch(err){ toast('That file could not be read.'); }
+  };
+  r.readAsText(file); e.target.value='';
+}
+function clearAll(){
+  if(!confirm('Erase all items and brethren on this device? Export a backup first if you want to keep it.')) return;
+  items=[]; brethren=[]; save(); renderAll(); toast('Cleared.');
+}
 
-            document.getElementById('recent-activity').innerHTML = activityHtml;
-        }
+/* ---------- helpers ---------- */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
-        function renderEvents() {
-            const container = document.getElementById('events-table');
-            
-            if (events.length === 0) {
-                container.innerHTML = '<div class="empty-state">No events yet. Click "Add Event" to create your first event!</div>';
-                return;
-            }
+/* ---------- modal close on scrim click / esc ---------- */
+document.querySelectorAll('.scrim').forEach(s=>s.addEventListener('click',e=>{ if(e.target===s) s.classList.remove('open'); }));
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.scrim.open').forEach(s=>s.classList.remove('open')); });
 
-            const sortedEvents = [...events].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            container.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Event Name</th>
-                            <th>Date</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Owner</th>
-                            <th>Target</th>
-                            <th>Focus Five</th>
-                            <th>Attendance</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${sortedEvents.map(e => `
-                            <tr>
-                                <td><strong>${e.name}</strong><br><small style="color: var(--text-secondary);">${e.purpose}</small></td>
-                                <td>${new Date(e.date).toLocaleDateString()}</td>
-                                <td><span class="badge badge-${e.type.toLowerCase()}">${e.type}</span></td>
-                                <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
-                                <td>${e.owner}</td>
-                                <td>${e.target}</td>
-                                <td>${e.focusFive ? '✅ Yes' : '—'}</td>
-                                <td>${e.attendance || 'TBD'}</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="action-btn action-btn-edit" onclick="openEventModal('${e.id}')">Edit</button>
-                                        <button class="action-btn action-btn-delete" onclick="deleteEvent('${e.id}')">Delete</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        function renderMembers() {
-            const container = document.getElementById('members-table');
-            
-            if (members.length === 0) {
-                container.innerHTML = '<div class="empty-state">No members yet. Click "Add Member" to track engagement!</div>';
-                return;
-            }
-
-            const sortedMembers = [...members].sort((a, b) => a.name.localeCompare(b.name));
-
-            container.innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Category</th>
-                            <th>Last Attended</th>
-                            <th>Event Types</th>
-                            <th>Signal</th>
-                            <th>Recently Invited</th>
-                            <th>Follow-Up Owner</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${sortedMembers.map(m => `
-                            <tr>
-                                <td><strong>${m.name}</strong></td>
-                                <td><span class="badge badge-${m.category.toLowerCase()}">${m.category}</span></td>
-                                <td>${m.lastAttended ? new Date(m.lastAttended + '-01').toLocaleDateString('en-US', {month: 'short', year: 'numeric'}) : 'Unknown'}</td>
-                                <td>${m.eventTypes?.join(', ') || '—'}</td>
-                                <td><span class="badge badge-${m.signal.toLowerCase()}">${m.signal}</span></td>
-                                <td>${m.invited ? '✅ Yes' : '—'}</td>
-                                <td>${m.followup}</td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <button class="action-btn action-btn-edit" onclick="openMemberModal('${m.id}')">Edit</button>
-                                        <button class="action-btn action-btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
-                                    </div>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        function renderQuarters() {
-            const container = document.getElementById('quarters-grid');
-            
-            if (quarters.length === 0) {
-                container.innerHTML = '<div class="empty-state">No quarterly data yet. Click "Add Quarter" to start planning!</div>';
-                return;
-            }
-
-            const sortedQuarters = [...quarters].sort((a, b) => {
-                if (a.year !== b.year) return b.year - a.year;
-                const qOrder = {'Q1': 1, 'Q2': 2, 'Q3': 3, 'Q4': 4};
-                return qOrder[b.name] - qOrder[a.name];
-            });
-
-            container.innerHTML = `
-                <div class="quarter-grid">
-                    ${sortedQuarters.map(q => `
-                        <div class="quarter-card">
-                            <div class="quarter-header">${q.name} ${q.year}</div>
-                            <div style="margin-bottom: 1rem;">
-                                <strong>Planned Activities:</strong><br>
-                                ${q.planned?.join(', ') || 'None'}
-                            </div>
-                            <div style="margin-bottom: 1rem;">
-                                <strong>Completed:</strong> ${q.completed || 0} activities<br>
-                                <strong>Avg Attendance:</strong> ${q.attendance || 0}<br>
-                                <strong>Focus Five:</strong> <span class="badge">${q.alignment || 'None'}</span>
-                            </div>
-                            ${q.unity ? `<div style="margin-bottom: 0.5rem;"><strong>Built Unity:</strong> ${q.unity}</div>` : ''}
-                            ${q.flat ? `<div style="margin-bottom: 0.5rem;"><strong>Fell Flat:</strong> ${q.flat}</div>` : ''}
-                            ${q.repeat ? `<div style="margin-bottom: 0.5rem;"><strong>Repeat:</strong> ${q.repeat}</div>` : ''}
-                            <div class="action-buttons" style="margin-top: 1rem;">
-                                <button class="action-btn action-btn-edit" onclick="openQuarterModal('${q.id}')">Edit</button>
-                                <button class="action-btn action-btn-delete" onclick="deleteQuarter('${q.id}')">Delete</button>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-
-        // Data Management
-        function saveData() {
-            localStorage.setItem('eq-tracker-events', JSON.stringify(events));
-            localStorage.setItem('eq-tracker-members', JSON.stringify(members));
-            localStorage.setItem('eq-tracker-quarters', JSON.stringify(quarters));
-        }
-
-        function loadData() {
-            const savedEvents = localStorage.getItem('eq-tracker-events');
-            const savedMembers = localStorage.getItem('eq-tracker-members');
-            const savedQuarters = localStorage.getItem('eq-tracker-quarters');
-            
-            if (savedEvents) events = JSON.parse(savedEvents);
-            if (savedMembers) members = JSON.parse(savedMembers);
-            if (savedQuarters) quarters = JSON.parse(savedQuarters);
-        }
-
-        function exportToJSON() {
-            const data = {
-                events: events,
-                members: members,
-                quarters: quarters,
-                exportDate: new Date().toISOString()
-            };
-            
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `eq-tracker-backup-${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function importFromJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    if (confirm('This will replace all current data. Are you sure?')) {
-                        events = data.events || [];
-                        members = data.members || [];
-                        quarters = data.quarters || [];
-                        saveData();
-                        renderAll();
-                        alert('Data imported successfully!');
-                    }
-                } catch (error) {
-                    alert('Error importing file. Please check the file format.');
-                }
-            };
-            reader.readAsText(file);
-        }
-    </script>
+/* ---------- init ---------- */
+load(); renderAll();
+</script>
 </body>
 </html>
