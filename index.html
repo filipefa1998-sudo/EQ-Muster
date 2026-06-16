@@ -276,6 +276,39 @@ body{
 .callout{background:var(--panel);border:1px solid var(--line-soft);border-left:3px solid var(--brass);border-radius:var(--r);padding:14px 16px;margin-bottom:22px;font-size:13px;color:var(--bone-dim);line-height:1.55}
 .callout b{color:var(--bone)}
 a.tel{color:inherit;text-decoration:none}
+
+/* ---------- sync status ---------- */
+.sync{display:inline-flex;align-items:center;gap:7px;font-family:'Oswald';font-weight:600;font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:5px 11px;border-radius:20px;border:1px solid var(--line);margin-top:10px}
+.sync .dot{width:7px;height:7px;border-radius:50%}
+.sync.ok{color:var(--olive);border-color:#3a4430}
+.sync.ok .dot{background:var(--olive);box-shadow:0 0 8px var(--olive)}
+.sync.off{color:var(--bone-faint)}
+.sync.off .dot{background:var(--bone-faint)}
+
+/* ---------- board mode toggle ---------- */
+.board-modes{margin-bottom:18px}
+
+/* ---------- timeline ---------- */
+.tl{position:relative;margin-top:4px}
+.tl-month{font-family:'Oswald';font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12.5px;color:var(--brass);margin:24px 0 12px;padding-left:28px}
+.tl-month:first-child{margin-top:2px}
+.tl-item{position:relative;padding-left:28px;padding-bottom:12px;cursor:pointer}
+.tl-item::before{content:"";position:absolute;left:5px;top:8px;bottom:-6px;width:2px;background:var(--line)}
+.tl-item:last-child::before{display:none}
+.tl-node{position:absolute;left:0;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid var(--brass);background:var(--ink);z-index:1}
+.tl-node.done{border-color:var(--olive);background:var(--olive)}
+.tl-node.cancelled{border-color:var(--oxblood)}
+.tl-card{background:var(--panel);border:1px solid var(--line-soft);border-radius:9px;padding:11px 14px;transition:border-color .15s}
+.tl-item:hover .tl-card{border-color:var(--brass-deep)}
+.tl-item:focus-visible{outline:none}
+.tl-item:focus-visible .tl-card{border-color:var(--brass);outline:2px solid var(--brass);outline-offset:1px}
+.tl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tl-date{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--bone-dim);min-width:46px}
+.tl-pic{display:inline-flex}
+.tl-pic svg{width:16px;height:16px}
+.tl-title{font-family:'Oswald';font-weight:600;font-size:15px;flex:1;min-width:130px;line-height:1.15}
+.tl-item.done .tl-title{color:var(--bone-dim)}
+.tl-item.cancelled .tl-title{text-decoration:line-through;color:var(--bone-faint)}
 </style>
 </head>
 <body>
@@ -291,6 +324,7 @@ a.tel{color:inherit;text-decoration:none}
         <div class="eyebrow">Elders Quorum · Service &amp; Activities</div>
         <div class="wordmark">Muster</div>
         <div class="tagline">Put your shoulder to the wheel — stake, ward, and quorum.</div>
+        <div class="sync off" id="sync-status"><span class="dot"></span>Connecting…</div>
       </div>
     </div>
     <nav class="nav" id="nav">
@@ -309,13 +343,36 @@ a.tel{color:inherit;text-decoration:none}
   <section id="view-board" class="view active">
     <div class="stats" id="stats"></div>
 
-    <div class="board" id="board"></div>
-
-    <div class="sec-head">
-      <h2 class="sec-title">On Deck — Next 14 Days</h2>
-      <span class="sec-sub" id="ondeck-sub"></span>
+    <div class="seg board-modes" id="board-modes">
+      <button class="active" data-mode="matrix" onclick="setBoardMode('matrix')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Matrix
+      </button>
+      <button data-mode="timeline" onclick="setBoardMode('timeline')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        Timeline
+      </button>
     </div>
-    <div class="list" id="ondeck"></div>
+
+    <!-- MATRIX MODE -->
+    <div id="mode-matrix">
+      <div class="board" id="board"></div>
+      <div class="sec-head">
+        <h2 class="sec-title">On Deck — Next 14 Days</h2>
+        <span class="sec-sub" id="ondeck-sub"></span>
+      </div>
+      <div class="list" id="ondeck"></div>
+    </div>
+
+    <!-- TIMELINE MODE -->
+    <div id="mode-timeline" style="display:none">
+      <div class="sec-head">
+        <h2 class="sec-title">Timeline</h2>
+        <span class="sec-sub">The quorum's plan, start to finish. Tap any item to edit.</span>
+      </div>
+      <div class="seg" id="seg-timeline"></div>
+      <div id="timeline"></div>
+    </div>
   </section>
 
   <!-- ============ SERVICE ============ -->
@@ -379,14 +436,15 @@ a.tel{color:inherit;text-decoration:none}
     </div>
     <p style="font-size:12.5px;color:var(--bone-dim);margin-bottom:26px">Builds a clean text block of upcoming service &amp; activities to paste into the quorum group text.</p>
 
-    <div class="sec-head"><h2 class="sec-title" style="font-size:16px">Backup</h2></div>
+    <div class="sec-head"><h2 class="sec-title" style="font-size:16px">Backup &amp; data</h2></div>
     <div class="toolrow">
       <button class="btn btn-ghost" onclick="exportJSON()">Export all data</button>
       <button class="btn btn-ghost" onclick="document.getElementById('import-file').click()">Import data</button>
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button class="btn btn-ghost" onclick="loadSample()">Load sample data</button>
       <button class="btn btn-ghost btn-danger" onclick="clearAll()">Clear everything</button>
     </div>
-    <p style="font-size:12.5px;color:var(--bone-dim)">Data lives on this device. Export regularly and hand the file to the next presidency — it's the quorum's memory.</p>
+    <p style="font-size:12.5px;color:var(--bone-dim)">When cloud sync is on, the board is shared live with everyone who opens this app — add or remove members in your Firebase console. Export still works as a snapshot backup to hand the next presidency. <b>Load sample data</b> drops in a few example projects so you can see how it works; clear it before going live.</p>
   </section>
 
 </main>
@@ -487,10 +545,15 @@ a.tel{color:inherit;text-decoration:none}
 
 <div class="toast" id="toast"></div>
 
+<!-- Firebase (compat SDK — works in a plain script, no build step) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
 <script>
 /* ============================================================
    MUSTER — Elders Quorum Service & Activities Board
-   Single-file. Data persists in localStorage on this device.
+   Single file. Syncs live across the presidency via Firestore,
+   with offline support and a localStorage fallback.
 ============================================================ */
 
 const LEVELS = ['stake','ward','quorum'];
@@ -506,6 +569,8 @@ let editingBro = null;
 let pickedPillar = 'service';
 let filter = { service:'all', activity:'all' };
 let search = { service:'', activity:'' };
+let boardMode = 'matrix';
+let tlFilter = 'all';
 
 /* ---------- icons ---------- */
 const SVG = {
@@ -538,36 +603,113 @@ function whenLabel(d){
   return {txt:fmtDate(d), cls:''};
 }
 
-/* ---------- persistence ---------- */
-function save(){
+/* ---------- persistence (Firestore w/ localStorage fallback) ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyBwnMTAu3kPpqehtvrcOkzhPwWGBJCsZUo",
+  authDomain: "eq-muster.firebaseapp.com",
+  projectId: "eq-muster",
+  storageBucket: "eq-muster.firebasestorage.app",
+  messagingSenderId: "816553810167",
+  appId: "1:816553810167:web:3f20a02e55bb6d5a3bdbf2"
+};
+let db = null, useCloud = false, cloudReady = {items:false, brethren:false};
+
+function initData(){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    db.enablePersistence({synchronizeTabs:true}).catch(()=>{}); // offline support; ignore multi-tab notice
+    useCloud = true;
+    subscribeCloud();
+    setStatus();
+  }catch(e){
+    useCloud = false;
+    loadLocal();
+    renderAll();
+    setStatus();
+  }
+}
+function subscribeCloud(){
+  db.collection('items').onSnapshot(snap=>{
+    items = snap.docs.map(d=>({...d.data(), id:d.id}));
+    cloudReady.items = true; renderAll();
+  }, err=>{ console.error(err); toast('Sync error — working offline.'); });
+  db.collection('brethren').onSnapshot(snap=>{
+    brethren = snap.docs.map(d=>({...d.data(), id:d.id}));
+    cloudReady.brethren = true; renderBrethren();
+  }, err=>console.error(err));
+}
+
+/* single-record writes route through here so cloud + local share one code path */
+function upsertItem(item){
+  if(useCloud){ db.collection('items').doc(item.id).set(item).catch(()=>toast('Save failed — check connection.')); }
+  else { const i=items.findIndex(x=>x.id===item.id); if(i>=0) items[i]=item; else items.push(item); localSave(); renderAll(); }
+}
+function removeItemDoc(id){
+  if(useCloud){ db.collection('items').doc(id).delete().catch(()=>toast('Delete failed.')); }
+  else { items=items.filter(x=>x.id!==id); localSave(); renderAll(); }
+}
+function upsertBro(b){
+  if(useCloud){ db.collection('brethren').doc(b.id).set(b).catch(()=>toast('Save failed.')); }
+  else { const i=brethren.findIndex(x=>x.id===b.id); if(i>=0) brethren[i]=b; else brethren.push(b); localSave(); renderBrethren(); }
+}
+function removeBroDoc(id){
+  if(useCloud){ db.collection('brethren').doc(id).delete().catch(()=>toast('Delete failed.')); }
+  else { brethren=brethren.filter(x=>x.id!==id); localSave(); renderBrethren(); }
+}
+
+/* localStorage fallback */
+function localSave(){
   localStorage.setItem('muster-items', JSON.stringify(items));
   localStorage.setItem('muster-brethren', JSON.stringify(brethren));
 }
-function load(){
+function loadLocal(){
   const i = localStorage.getItem('muster-items');
   const b = localStorage.getItem('muster-brethren');
-  if(i){ items = JSON.parse(i); } else { seed(); }
+  if(i){ items = JSON.parse(i); } else { const s=sampleData(); items=s.items; brethren=s.brethren; localSave(); }
   if(b){ brethren = JSON.parse(b); }
 }
-function seed(){
+
+function setStatus(){
+  const el=document.getElementById('sync-status');
+  if(!el) return;
+  if(useCloud){ el.className='sync ok'; el.innerHTML='<span class="dot"></span>Cloud synced'; }
+  else { el.className='sync off'; el.innerHTML='<span class="dot"></span>On this device'; }
+}
+
+/* sample data — opt-in only, never auto-loaded into the live cloud board */
+function sampleData(){
   const iso = (offset)=>{ const d=new Date(); d.setDate(d.getDate()+offset); return d.toISOString().slice(0,10); };
-  items = [
-    {id:uid(),pillar:'service',level:'stake',title:'Stake JustServe day at the food bank',date:iso(9),status:'promoted',owner:'EQ Presidency',purpose:'Stake-wide morning of sorting and packing donations.',attend:0,hours:0,needs:'Carpools, willing hands',ff:true,worked:'',change:''},
-    {id:uid(),pillar:'service',level:'ward',title:'Yard cleanup for Sister Tupou',date:iso(4),status:'planned',owner:'1st Counselor',purpose:'Mow, trim, and haul for a widow in the ward.',attend:0,hours:0,needs:'Mowers, trailer, trimmers',ff:false,worked:'',change:''},
-    {id:uid(),pillar:'service',level:'quorum',title:'Move-in help for the Fonua family',date:iso(2),status:'promoted',owner:'Bro. Latu',purpose:'Unload the truck and set up beds — new move-ins.',attend:0,hours:0,needs:'Trucks, strong backs, pizza',ff:true,worked:'',change:''},
-    {id:uid(),pillar:'service',level:'quorum',title:'Snow removal rotation',date:iso(-6),status:'completed',owner:'Bro. Vea',purpose:'Cleared driveways for three older couples.',attend:7,hours:9,needs:'Shovels, blowers',ff:false,worked:'Group text the night before filled every slot.',change:'Start the rotation earlier in the season.'},
-    {id:uid(),pillar:'activity',level:'stake',title:'Stake temple trip',date:iso(20),status:'planned',owner:'EQ Presidency',purpose:'Quorum block on the stake temple night.',attend:0,hours:0,needs:'Carpools',ff:true,worked:'',change:''},
-    {id:uid(),pillar:'activity',level:'ward',title:'Ward campout — fathers & sons',date:iso(34),status:'planned',owner:'2nd Counselor',purpose:'Overnight in the canyon, Dutch-oven dinner.',attend:0,hours:0,needs:'Tents, griddles, firewood',ff:false,worked:'',change:''},
-    {id:uid(),pillar:'activity',level:'quorum',title:'Brotherhood BBQ + cornhole',date:iso(5),status:'promoted',owner:'Bro. Maka',purpose:'Low-key Friday to pull in the brethren we miss.',attend:0,hours:0,needs:'Grill, meat, chairs',ff:true,worked:'',change:''},
-    {id:uid(),pillar:'activity',level:'quorum',title:'Pickup basketball night',date:iso(-3),status:'completed',owner:'Bro. Sione',purpose:'Standing Wednesday run at the stake center.',attend:11,hours:0,needs:'Gym key, water',ff:false,worked:'Two less-active brothers came and stayed late.',change:'Bump start time 30 min later for work schedules.'}
-  ];
-  brethren = [
-    {id:uid(),name:'Sione Latu',phone:'8015550142',role:'Quorum President',count:6},
-    {id:uid(),name:'David Vea',phone:'8015550178',role:'1st Counselor',count:5},
-    {id:uid(),name:'Mosese Maka',phone:'8015550133',role:'2nd Counselor',count:4},
-    {id:uid(),name:'Tevita Fonua',phone:'',role:'New move-in',count:1}
-  ];
-  save();
+  return {
+    items:[
+      {id:uid(),pillar:'service',level:'stake',title:'Stake JustServe day at the food bank',date:iso(9),status:'promoted',owner:'EQ Presidency',purpose:'Stake-wide morning of sorting and packing donations.',attend:0,hours:0,needs:'Carpools, willing hands',ff:true,worked:'',change:''},
+      {id:uid(),pillar:'service',level:'ward',title:'Yard cleanup for Sister Tupou',date:iso(4),status:'planned',owner:'1st Counselor',purpose:'Mow, trim, and haul for a widow in the ward.',attend:0,hours:0,needs:'Mowers, trailer, trimmers',ff:false,worked:'',change:''},
+      {id:uid(),pillar:'service',level:'quorum',title:'Move-in help for the Fonua family',date:iso(2),status:'promoted',owner:'Bro. Latu',purpose:'Unload the truck and set up beds — new move-ins.',attend:0,hours:0,needs:'Trucks, strong backs, pizza',ff:true,worked:'',change:''},
+      {id:uid(),pillar:'service',level:'quorum',title:'Snow removal rotation',date:iso(-6),status:'completed',owner:'Bro. Vea',purpose:'Cleared driveways for three older couples.',attend:7,hours:9,needs:'Shovels, blowers',ff:false,worked:'Group text the night before filled every slot.',change:'Start the rotation earlier in the season.'},
+      {id:uid(),pillar:'activity',level:'stake',title:'Stake temple trip',date:iso(20),status:'planned',owner:'EQ Presidency',purpose:'Quorum block on the stake temple night.',attend:0,hours:0,needs:'Carpools',ff:true,worked:'',change:''},
+      {id:uid(),pillar:'activity',level:'ward',title:'Ward campout — fathers & sons',date:iso(34),status:'planned',owner:'2nd Counselor',purpose:'Overnight in the canyon, Dutch-oven dinner.',attend:0,hours:0,needs:'Tents, griddles, firewood',ff:false,worked:'',change:''},
+      {id:uid(),pillar:'activity',level:'quorum',title:'Brotherhood BBQ + cornhole',date:iso(5),status:'promoted',owner:'Bro. Maka',purpose:'Low-key Friday to pull in the brethren we miss.',attend:0,hours:0,needs:'Grill, meat, chairs',ff:true,worked:'',change:''},
+      {id:uid(),pillar:'activity',level:'quorum',title:'Pickup basketball night',date:iso(-3),status:'completed',owner:'Bro. Sione',purpose:'Standing Wednesday run at the stake center.',attend:11,hours:0,needs:'Gym key, water',ff:false,worked:'Two less-active brothers came and stayed late.',change:'Bump start time 30 min later for work schedules.'}
+    ],
+    brethren:[
+      {id:uid(),name:'Sione Latu',phone:'8015550142',role:'Quorum President',count:6},
+      {id:uid(),name:'David Vea',phone:'8015550178',role:'1st Counselor',count:5},
+      {id:uid(),name:'Mosese Maka',phone:'8015550133',role:'2nd Counselor',count:4},
+      {id:uid(),name:'Tevita Fonua',phone:'',role:'New move-in',count:1}
+    ]
+  };
+}
+function loadSample(){
+  if((items.length||brethren.length) && !confirm('Add sample data on top of what’s already here?')) return;
+  const s=sampleData();
+  if(useCloud){
+    const batch=db.batch();
+    s.items.forEach(it=>batch.set(db.collection('items').doc(it.id), it));
+    s.brethren.forEach(b=>batch.set(db.collection('brethren').doc(b.id), b));
+    batch.commit().then(()=>toast('Sample data loaded.')).catch(()=>toast('Could not load sample.'));
+  } else {
+    items=items.concat(s.items); brethren=brethren.concat(s.brethren); localSave(); renderAll(); toast('Sample data loaded.');
+  }
 }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 
@@ -590,7 +732,7 @@ function showView(v){
 }
 
 /* ============ RENDER ============ */
-function renderAll(){ renderStats(); renderBoard(); renderOnDeck(); renderList('service'); renderList('activity'); renderSegs(); renderBrethren(); }
+function renderAll(){ renderStats(); renderBoard(); renderOnDeck(); renderList('service'); renderList('activity'); renderSegs(); renderBrethren(); if(boardMode==='timeline') renderTimeline(); }
 
 function activeItems(){ return items.filter(i=>i.status!=='cancelled'); }
 
@@ -662,6 +804,70 @@ function renderOnDeck(){
   const el=document.getElementById('ondeck');
   if(!list.length){ el.innerHTML = emptyState('All quiet','Nothing scheduled in the next two weeks. Tap Add to put something on the board.'); return; }
   el.innerHTML = list.map(itemCard).join('');
+}
+
+/* ---------- board mode + timeline ---------- */
+function setBoardMode(m){
+  boardMode=m;
+  document.querySelectorAll('#board-modes button').forEach(b=>b.classList.toggle('active',b.dataset.mode===m));
+  document.getElementById('mode-matrix').style.display = m==='matrix'?'block':'none';
+  document.getElementById('mode-timeline').style.display = m==='timeline'?'block':'none';
+  if(m==='timeline') renderTimeline();
+}
+function setTlFilter(f){ tlFilter=f; renderTimeline(); }
+function renderTlSeg(){
+  const opts=[['all','All'],['service','Service'],['activity','Activities']];
+  document.getElementById('seg-timeline').innerHTML=opts.map(([k,l])=>{
+    const c = k==='all'
+      ? items.filter(i=>i.status!=='cancelled').length
+      : items.filter(i=>i.pillar===k&&i.status!=='cancelled').length;
+    return `<button class="${tlFilter===k?'active':''}" onclick="setTlFilter('${k}')">${l} <span style="opacity:.6;margin-left:2px">${c}</span></button>`;
+  }).join('');
+}
+function renderTimeline(){
+  renderTlSeg();
+  let list=items.filter(i=>i.status!=='cancelled');
+  if(tlFilter!=='all') list=list.filter(i=>i.pillar===tlFilter);
+  const dated=list.filter(i=>parseDate(i.date)).sort((a,b)=>parseDate(a.date)-parseDate(b.date));
+  const undated=list.filter(i=>!parseDate(i.date));
+  const el=document.getElementById('timeline');
+  if(!dated.length && !undated.length){ el.innerHTML=emptyState('Nothing planned yet','Add items and they line up here by date — the whole rhythm of the year in one view.'); return; }
+  let html='<div class="tl">';
+  let curMonth='';
+  const todayKey=todayMid().toISOString().slice(0,7);
+  dated.forEach(i=>{
+    const d=parseDate(i.date);
+    const m=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    if(m!==curMonth){
+      curMonth=m;
+      const isNow = d.toISOString().slice(0,7)===todayKey;
+      html+=`<div class="tl-month">${m}${isNow?' · this month':''}</div>`;
+    }
+    html+=tlRow(i,d);
+  });
+  if(undated.length){
+    html+=`<div class="tl-month">Unscheduled</div>`;
+    undated.forEach(i=>html+=tlRow(i,null));
+  }
+  html+='</div>';
+  el.innerHTML=html;
+}
+function tlRow(i,d){
+  const sc=i.status==='completed'?'done':(i.status==='cancelled'?'cancelled':'');
+  const dateTxt=d? d.toLocaleDateString('en-US',{weekday:'short',day:'numeric'}) : '—';
+  const statusLabel={planned:'Planned',promoted:'Promoted',completed:'Done',cancelled:'Cancelled'}[i.status];
+  return `<div class="tl-item ${sc}" tabindex="0" role="button" onclick="openItem('${i.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openItem('${i.id}')}">
+    <div class="tl-node ${sc}"></div>
+    <div class="tl-card">
+      <div class="tl-row">
+        <span class="tl-date">${dateTxt}</span>
+        <span class="tl-pic">${SVG[i.pillar]}</span>
+        <span class="tl-title">${esc(i.title)}</span>
+        <span class="chip tier">${LEVEL_NAME[i.level]} ${pipsHTML(i.level)}</span>
+        <span class="chip status s-${i.status}">${statusLabel}</span>
+      </div>
+    </div>
+  </div>`;
 }
 
 function renderList(pillar){
@@ -749,7 +955,8 @@ document.getElementById('search-activity').addEventListener('input',e=>{search.a
 
 /* ---------- status advance ---------- */
 function advance(id){
-  const i=items.find(x=>x.id===id); if(!i) return;
+  const src=items.find(x=>x.id===id); if(!src) return;
+  const i={...src};
   const idx=STATUS_FLOW.indexOf(i.status);
   const next=STATUS_FLOW[idx+1];
   if(next==='completed'){
@@ -761,7 +968,7 @@ function advance(id){
       if(h!==null && h!=='') i.hours=Number(h)||i.hours;
     }
   }
-  i.status=next; save(); renderAll();
+  i.status=next; upsertItem(i);
   toast(next==='completed'?'Logged. Well done.':'Status updated.');
 }
 
@@ -825,15 +1032,16 @@ function saveItem(){
     worked:document.getElementById('i-worked').value.trim(),
     change:document.getElementById('i-change').value.trim()
   };
-  if(editingItem){ const idx=items.findIndex(x=>x.id===editingItem); items[idx]={...items[idx],...data}; }
-  else { items.push({id:uid(),...data}); }
-  save(); renderAll(); closeItem(); toast(editingItem?'Saved.':'Added to the board.');
+  const merged = editingItem
+    ? {...items.find(x=>x.id===editingItem), ...data}
+    : {id:uid(), ...data};
+  upsertItem(merged); closeItem(); toast(editingItem?'Saved.':'Added to the board.');
 }
 function deleteItem(){
   if(!editingItem) return;
   if(!confirm('Delete this item?')) return;
-  items=items.filter(x=>x.id!==editingItem);
-  save(); renderAll(); closeItem(); toast('Deleted.');
+  removeItemDoc(editingItem);
+  closeItem(); toast('Deleted.');
 }
 
 /* ============ BRETHREN ============ */
@@ -876,7 +1084,7 @@ function renderLeaderboard(){
     <span class="lead-ct">${b.count||0}</span>
   </div>`).join('');
 }
-function bumpBro(id){ const b=brethren.find(x=>x.id===id); if(!b) return; b.count=(b.count||0)+1; save(); renderBrethren(); toast(`${b.name.split(' ')[0]} +1`); }
+function bumpBro(id){ const b=brethren.find(x=>x.id===id); if(!b) return; upsertBro({...b,count:(b.count||0)+1}); toast(`${b.name.split(' ')[0]} +1`); }
 
 function openBro(id){
   editingBro=id||null;
@@ -900,15 +1108,15 @@ function saveBro(){
   const name=document.getElementById('b-name').value.trim();
   if(!name){ toast('Name first.'); return; }
   const data={name,phone:document.getElementById('b-phone').value.trim(),role:document.getElementById('b-role').value.trim()};
-  if(editingBro){ const idx=brethren.findIndex(x=>x.id===editingBro); brethren[idx]={...brethren[idx],...data}; }
-  else { brethren.push({id:uid(),count:0,...data}); }
-  save(); renderBrethren(); closeBro(); toast('Saved.');
+  const merged = editingBro
+    ? {...brethren.find(x=>x.id===editingBro), ...data}
+    : {id:uid(), count:0, ...data};
+  upsertBro(merged); closeBro(); toast('Saved.');
 }
 function deleteBro(){
   if(!editingBro) return;
   if(!confirm('Remove this brother?')) return;
-  brethren=brethren.filter(x=>x.id!==editingBro);
-  save(); renderBrethren(); closeBro();
+  removeBroDoc(editingBro); closeBro();
 }
 
 /* ============ ANNOUNCEMENTS ============ */
@@ -951,16 +1159,33 @@ function importJSON(e){
   r.onload=ev=>{
     try{
       const d=JSON.parse(ev.target.result);
-      if(d.items) items=d.items;
-      if(d.brethren) brethren=d.brethren;
-      save(); renderAll(); toast('Data imported.');
+      const inItems=Array.isArray(d.items)?d.items:[];
+      const inBre=Array.isArray(d.brethren)?d.brethren:[];
+      inItems.forEach(it=>{ if(!it.id) it.id=uid(); });
+      inBre.forEach(b=>{ if(!b.id) b.id=uid(); });
+      if(useCloud){
+        const batch=db.batch();
+        inItems.forEach(it=>batch.set(db.collection('items').doc(it.id), it));
+        inBre.forEach(b=>batch.set(db.collection('brethren').doc(b.id), b));
+        batch.commit().then(()=>toast('Data imported.')).catch(()=>toast('Import failed.'));
+      } else {
+        items=inItems; brethren=inBre; localSave(); renderAll(); toast('Data imported.');
+      }
     }catch(err){ toast('That file could not be read.'); }
   };
   r.readAsText(file); e.target.value='';
 }
 function clearAll(){
-  if(!confirm('Erase all items and brethren on this device? Export a backup first if you want to keep it.')) return;
-  items=[]; brethren=[]; save(); renderAll(); toast('Cleared.');
+  const where = useCloud ? 'the shared cloud board (every member will see it cleared)' : 'this device';
+  if(!confirm('Erase all items and brethren from '+where+'? Export a backup first if you want to keep it.')) return;
+  if(useCloud){
+    const batch=db.batch();
+    items.forEach(it=>batch.delete(db.collection('items').doc(it.id)));
+    brethren.forEach(b=>batch.delete(db.collection('brethren').doc(b.id)));
+    batch.commit().then(()=>toast('Cleared.')).catch(()=>toast('Clear failed.'));
+  } else {
+    items=[]; brethren=[]; localSave(); renderAll(); toast('Cleared.');
+  }
 }
 
 /* ---------- helpers ---------- */
@@ -971,7 +1196,7 @@ document.querySelectorAll('.scrim').forEach(s=>s.addEventListener('click',e=>{ i
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.scrim.open').forEach(s=>s.classList.remove('open')); });
 
 /* ---------- init ---------- */
-load(); renderAll();
+initData();
 </script>
 </body>
 </html>
