@@ -188,6 +188,8 @@ body{
 .chip.when{background:none;color:var(--brass);border-color:var(--brass-deep)}
 .chip.when.past{color:var(--bone-faint);border-color:var(--line-soft)}
 .chip.when.today{background:var(--brass);color:#1a1407;border:none}
+.chip.when.overdue{color:#E08A7E;border-color:var(--oxblood)}
+.cell-next .when.overdue{color:#E08A7E}
 .chip.ff{color:var(--bone-dim);border-color:var(--line)}
 
 .item-purpose{font-size:13.5px;color:var(--bone-dim);line-height:1.5;padding-left:8px}
@@ -494,7 +496,7 @@ a.tel{color:inherit;text-decoration:none}
         <input type="text" id="i-title" placeholder="e.g. Move-in help for the Fonua family">
       </div>
       <div class="grid2">
-        <div class="fg"><label>Date</label><input type="date" id="i-date"></div>
+        <div class="fg"><label>Date</label><input type="date" id="i-date" min="2000-01-01" max="2099-12-31"></div>
         <div class="fg"><label>Point person</label><input type="text" id="i-owner" placeholder="EQP / Counselor / Name"></div>
       </div>
       <div class="fg">
@@ -598,6 +600,10 @@ function pipsHTML(level, cls='mp'){
 
 /* ---------- dates ---------- */
 function parseDate(d){ if(!d) return null; const x=new Date(d+'T00:00:00'); return isNaN(x)?null:x; }
+/* local YYYY-MM-DD (toISOString is UTC and drifts a day in the evening) */
+function localISO(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+/* Chrome lets a 2-digit year through as 00YY (e.g. 10/18/26 -> 0026-10-18). Repair to 20YY. */
+function fixYear(d){ if(!d) return d; const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d); if(!m) return d; const y=+m[1]; return (y>0&&y<100)? String(2000+y)+'-'+m[2]+'-'+m[3] : d; }
 function todayMid(){ const t=new Date(); t.setHours(0,0,0,0); return t; }
 function daysUntil(d){ const x=parseDate(d); if(!x) return null; return Math.round((x-todayMid())/86400000); }
 function fmtDate(d){ const x=parseDate(d); if(!x) return 'No date'; return x.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
@@ -606,7 +612,7 @@ function whenLabel(d){
   if(n===null) return {txt:'No date', cls:'past'};
   if(n===0) return {txt:'Today', cls:'today'};
   if(n===1) return {txt:'Tomorrow', cls:''};
-  if(n<0) return {txt:`${Math.abs(n)}d ago`, cls:'past'};
+  if(n<0) return {txt:`Overdue · ${Math.abs(n)}d`, cls:'overdue'};
   if(n<=14) return {txt:`In ${n} days`, cls:''};
   return {txt:fmtDate(d), cls:''};
 }
@@ -640,6 +646,7 @@ function initData(){
 function subscribeCloud(){
   db.collection('items').onSnapshot(snap=>{
     items = snap.docs.map(d=>({...d.data(), id:d.id}));
+    repairDates();
     cloudReady.items = true; renderAll();
   }, err=>{ console.error(err); toast('Sync error — working offline.'); });
   db.collection('brethren').onSnapshot(snap=>{
@@ -676,6 +683,15 @@ function loadLocal(){
   const b = localStorage.getItem('muster-brethren');
   if(i){ items = JSON.parse(i); } else { const s=sampleData(); items=s.items; brethren=s.brethren; localSave(); }
   if(b){ brethren = JSON.parse(b); }
+  repairDates();
+}
+/* one-time cleanup of items saved with a 00YY year before the fix */
+function repairDates(){
+  items.forEach(it=>{
+    const f=fixYear(it.date);
+    if(f!==it.date){ it.date=f; if(useCloud) db.collection('items').doc(it.id).set(it).catch(()=>{}); }
+  });
+  if(!useCloud) localSave();
 }
 
 function setStatus(){
@@ -687,7 +703,7 @@ function setStatus(){
 
 /* sample data — opt-in only, never auto-loaded into the live cloud board */
 function sampleData(){
-  const iso = (offset)=>{ const d=new Date(); d.setDate(d.getDate()+offset); return d.toISOString().slice(0,10); };
+  const iso = (offset)=>{ const d=new Date(); d.setDate(d.getDate()+offset); return localISO(d); };
   return {
     items:[
       {id:uid(),pillar:'service',level:'stake',title:'Stake JustServe day at the food bank',date:iso(9),status:'promoted',owner:'EQ Presidency',purpose:'Stake-wide morning of sorting and packing donations.',attend:0,hours:0,needs:'Carpools, willing hands',ff:true,worked:'',change:''},
@@ -764,11 +780,13 @@ function cellFor(pillar, level){
   const open = list.filter(i=>i.status!=='completed');
   const upcoming = open.filter(i=>{const n=daysUntil(i.date); return n===null||n>=0;})
                        .sort((a,b)=>(daysUntil(a.date)??1e9)-(daysUntil(b.date)??1e9));
-  const next = upcoming[0];
+  const overdue = open.filter(i=>{const n=daysUntil(i.date); return n!==null&&n<0;})
+                     .sort((a,b)=>daysUntil(b.date)-daysUntil(a.date));
+  const next = upcoming[0] || overdue[0];
   let inner;
   if(next){
     const w=whenLabel(next.date);
-    inner=`<div class="cell-next"><div class="nx">${esc(next.title)}</div><div class="when">${w.txt}</div></div>`;
+    inner=`<div class="cell-next"><div class="nx">${esc(next.title)}</div><div class="when ${w.cls}">${w.txt}</div></div>`;
   } else {
     inner=`<div class="cell-next"><div class="cell-empty">Nothing on deck</div></div>`;
   }
@@ -806,9 +824,10 @@ function jumpTo(pillar, level){
 function renderOnDeck(){
   const list = items.filter(i=>{
     const n=daysUntil(i.date);
-    return i.status!=='cancelled' && i.status!=='completed' && n!==null && n>=0 && n<=14;
+    return i.status!=='cancelled' && i.status!=='completed' && n!==null && n<=14;
   }).sort((a,b)=>daysUntil(a.date)-daysUntil(b.date));
-  document.getElementById('ondeck-sub').textContent = list.length? `${list.length} coming up` : '';
+  const od=list.filter(i=>daysUntil(i.date)<0).length;
+  document.getElementById('ondeck-sub').textContent = list.length? `${list.length-od} coming up${od?` · ${od} overdue`:''}` : '';
   const el=document.getElementById('ondeck');
   if(!list.length){ el.innerHTML = emptyState('All quiet','Nothing scheduled in the next two weeks. Tap Add to put something on the board.'); return; }
   el.innerHTML = list.map(itemCard).join('');
@@ -842,13 +861,13 @@ function renderTimeline(){
   if(!dated.length && !undated.length){ el.innerHTML=emptyState('Nothing planned yet','Add items and they line up here by date — the whole rhythm of the year in one view.'); return; }
   let html='<div class="tl">';
   let curMonth='';
-  const todayKey=todayMid().toISOString().slice(0,7);
+  const todayKey=localISO(todayMid()).slice(0,7);
   dated.forEach(i=>{
     const d=parseDate(i.date);
     const m=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
     if(m!==curMonth){
       curMonth=m;
-      const isNow = d.toISOString().slice(0,7)===todayKey;
+      const isNow = localISO(d).slice(0,7)===todayKey;
       html+=`<div class="tl-month">${m}${isNow?' · this month':''}</div>`;
     }
     html+=tlRow(i,d);
@@ -970,10 +989,10 @@ function advance(id){
   if(next==='completed'){
     // quick capture
     const a=prompt('Marked done. How many brethren showed up? (optional)', i.attend||'');
-    if(a!==null && a!=='') i.attend=Number(a)||i.attend;
+    if(a!==null && a.trim()!=='' && !isNaN(Number(a))) i.attend=Number(a);
     if(i.pillar==='service'){
       const h=prompt('Service hours total? (headcount × hours, optional)', i.hours||'');
-      if(h!==null && h!=='') i.hours=Number(h)||i.hours;
+      if(h!==null && h.trim()!=='' && !isNaN(Number(h))) i.hours=Number(h);
     }
   }
   i.status=next; upsertItem(i);
@@ -1025,12 +1044,16 @@ function closeItem(){ document.getElementById('item-scrim').classList.remove('op
 function saveItem(){
   const title=document.getElementById('i-title').value.trim();
   if(!title){ toast('Give it a title first.'); return; }
+  const dateEl=document.getElementById('i-date');
+  if(dateEl.validity.badInput){ toast('Finish the date — month, day and 4-digit year.'); dateEl.focus(); return; }
+  const dateVal=fixYear(dateEl.value);
+  if(dateVal && (+dateVal.slice(0,4)<2000 || +dateVal.slice(0,4)>2099)){ toast('Check the year on that date.'); dateEl.focus(); return; }
   const data={
     pillar:pickedPillar,
     level:document.getElementById('i-level').value,
     status:document.getElementById('i-status').value,
     title,
-    date:document.getElementById('i-date').value,
+    date:dateVal,
     owner:document.getElementById('i-owner').value.trim(),
     purpose:document.getElementById('i-purpose').value.trim(),
     attend:Number(document.getElementById('i-attend').value)||0,
@@ -1083,7 +1106,7 @@ function broCard(b){
 function renderLeaderboard(){
   const top=[...brethren].sort((a,b)=>(b.count||0)-(a.count||0)).slice(0,8);
   const el=document.getElementById('leaderboard');
-  if(!top.length || top[0].count===0){ el.innerHTML=`<p style="font-size:12.5px;color:var(--bone-faint)">Tap <b style="color:var(--brass)">+1</b> on a brother each time he shows up. The roll builds itself.</p>`; return; }
+  if(!top.length || !(top[0].count>0)){ el.innerHTML=`<p style="font-size:12.5px;color:var(--bone-faint)">Tap <b style="color:var(--brass)">+1</b> on a brother each time he shows up. The roll builds itself.</p>`; return; }
   const max=top[0].count||1;
   el.innerHTML=top.map((b,idx)=>`<div class="lead-row">
     <span class="lead-rank ${idx===0?'top':''}">${idx+1}</span>
